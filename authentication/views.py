@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import RegisterSerializer, LoginSerializer, ProfileSerializer
 
-
+# view for register
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
@@ -15,7 +15,7 @@ class RegisterView(generics.CreateAPIView):
         serializer.save()
         return Response({'message': 'Account created successfully.'}, status=status.HTTP_201_CREATED)
 
-
+# view for login
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -32,7 +32,7 @@ class LoginView(APIView):
             },
         })
 
-
+# view for profile
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
