@@ -98,10 +98,13 @@ SIMPLE_JWT = {
 }
 
 # CORS settings - allow React frontend
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-]
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = [
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+    ]
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

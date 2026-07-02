@@ -23,4 +23,7 @@ urlpatterns = [
     path('api/checkins/', include('checkins.urls')),
     path('api/journal/', include('journal.urls')),
     path('api/epds/', include('epds.urls')),
+    path('api/insights/', include('insights.urls')),
+    path('api/support/', include('support.urls')),
+    path('api/messages/', include('messages_app.urls')),
 ]
