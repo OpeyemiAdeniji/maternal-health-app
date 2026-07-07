@@ -23,9 +23,22 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    class Country(models.TextChoices):
+        IRELAND = 'IRELAND', 'Ireland'
+        UNITED_KINGDOM = 'UNITED_KINGDOM', 'United Kingdom'
+        UNITED_STATES = 'UNITED_STATES', 'United States'
+        CANADA = 'CANADA', 'Canada'
+        AUSTRALIA = 'AUSTRALIA', 'Australia'
+
     # swapped username for email as the login field
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
+    country = models.CharField(
+        max_length=20,
+        choices=Country.choices,
+        default=Country.IRELAND,
+        blank=True,
+    )
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
