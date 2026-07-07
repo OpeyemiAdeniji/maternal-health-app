@@ -18,7 +18,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'full_name', 'password', 'confirm_password', 'healthcare_contact']
+        fields = ['email', 'full_name', 'country', 'password', 'confirm_password', 'healthcare_contact']
 
     def validate(self, data):
         if data['password'] != data.pop('confirm_password'):
@@ -32,6 +32,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             full_name=validated_data['full_name'],
             password=validated_data['password'],
         )
+        if 'country' in validated_data:
+            user.country = validated_data['country']
+            user.save()
         if contact_data:
             HealthcareContact.objects.create(user=user, **contact_data)
         return user
@@ -60,12 +63,14 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'full_name', 'created_at', 'healthcare_contact']
+        fields = ['email', 'full_name', 'country', 'motherhood_stage', 'created_at', 'healthcare_contact']
         read_only_fields = ['email', 'created_at']
 
     def update(self, instance, validated_data):
         contact_data = validated_data.pop('healthcare_contact', None)
         instance.full_name = validated_data.get('full_name', instance.full_name)
+        instance.country = validated_data.get('country', instance.country)
+        instance.motherhood_stage = validated_data.get('motherhood_stage', instance.motherhood_stage)
         instance.save()
 
         if contact_data is not None:
