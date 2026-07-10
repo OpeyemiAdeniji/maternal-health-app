@@ -63,7 +63,15 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'full_name', 'country', 'motherhood_stage', 'created_at', 'healthcare_contact']
+        fields = [
+            'email',
+            'full_name',
+            'country',
+            'motherhood_stage',
+            'notifications_enabled',
+            'created_at',
+            'healthcare_contact',
+        ]
         read_only_fields = ['email', 'created_at']
 
     def update(self, instance, validated_data):
@@ -71,6 +79,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         instance.full_name = validated_data.get('full_name', instance.full_name)
         instance.country = validated_data.get('country', instance.country)
         instance.motherhood_stage = validated_data.get('motherhood_stage', instance.motherhood_stage)
+        instance.notifications_enabled = validated_data.get('notifications_enabled', instance.notifications_enabled)
         instance.save()
 
         if contact_data is not None:
