@@ -30,6 +30,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         CANADA = 'CANADA', 'Canada'
         AUSTRALIA = 'AUSTRALIA', 'Australia'
 
+    class MotherhoodStage(models.TextChoices):
+        PREGNANT = 'pregnant', 'Pregnant'
+        POSTPARTUM = 'postpartum', 'Postpartum'
+
     # swapped username for email as the login field
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
@@ -39,6 +43,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=Country.IRELAND,
         blank=True,
     )
+    motherhood_stage = models.CharField(
+        max_length=20,
+        choices=MotherhoodStage.choices,
+        default=MotherhoodStage.POSTPARTUM,
+        blank=True,
+    )
+    # device push token for FCM — blank until the user grants notification permission
+    fcm_token = models.TextField(blank=True, default='')
+    notifications_enabled = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
