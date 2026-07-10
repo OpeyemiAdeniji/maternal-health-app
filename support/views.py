@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from authentication.models import HealthcareContact
 from authentication.serializers import HealthcareContactSerializer
 
-from .resources import IRISH_SUPPORT_RESOURCES
+from .resources import SUPPORT_RESOURCES
 
 
 class SupportResourcesView(APIView):
@@ -16,5 +16,6 @@ class SupportResourcesView(APIView):
         contact = HealthcareContact.objects.filter(user=request.user).first()
         if contact:
             data['personal_contact'] = HealthcareContactSerializer(contact).data
-        data['resources'] = IRISH_SUPPORT_RESOURCES
+        country = request.user.country
+        data['resources'] = SUPPORT_RESOURCES.get(country, SUPPORT_RESOURCES['IRELAND'])
         return Response(data)
