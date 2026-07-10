@@ -1,10 +1,10 @@
 SUPPORT_RESOURCES = {
     'IRELAND': [
         {
-            'name': 'HSE Perinatal Mental Health',
-            'description': 'HSE mental health services for women during pregnancy and after birth',
-            'url': 'https://www2.hse.ie/mental-health/services-support/perinatal/',
-            'phone': '1800 742 444',
+            'name': 'HSE Mental Health Services',
+            'description': 'HSE mental health services and support for pregnant women and new mothers in Ireland. Includes specialist perinatal mental health services available in all 19 maternity hospitals.',
+            'url': 'https://www2.hse.ie/mental-health/services-support/',
+            'phone': '1800 700 700',
         },
         {
             'name': 'Nurture Health',
