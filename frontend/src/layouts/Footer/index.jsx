@@ -1,16 +1,25 @@
 import { NavLink } from 'react-router-dom';
-import { BookIcon, HeartIcon, HomeIcon, PhoneIcon } from '../../components/common/icons';
+import {
+  BookIcon,
+  ChatBubbleIcon,
+  ClipboardCheckIcon,
+  HeartIcon,
+  HomeIcon,
+  PhoneIcon,
+} from '../../components/common/icons';
 
 const TABS = [
-  { to: '/dashboard', label: 'Dashboard', Icon: HomeIcon },
+  { to: '/dashboard', label: 'Home', Icon: HomeIcon },
   { to: '/checkin', label: 'Check-in', Icon: HeartIcon },
   { to: '/journal', label: 'Journal', Icon: BookIcon },
+  { to: '/chat', label: 'Chat', Icon: ChatBubbleIcon },
+  { to: '/epds', label: 'EPDS', Icon: ClipboardCheckIcon },
   { to: '/support', label: 'Support', Icon: PhoneIcon },
 ];
 
 export default function Footer() {
   return (
-    <footer className="flex justify-around border-t border-gray-100 bg-white px-2 py-2 shadow-[0_-4px_20px_rgba(107,78,255,0.06)] sm:hidden">
+    <footer className="fixed inset-x-0 bottom-0 z-20 flex justify-around border-t border-gray-100 bg-white px-2 py-2 shadow-[0_-4px_20px_rgba(107,78,255,0.06)] lg:hidden">
       {TABS.map(({ to, label, Icon }) => (
         <NavLink
           key={to}
