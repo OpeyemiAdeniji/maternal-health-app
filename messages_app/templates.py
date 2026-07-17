@@ -28,4 +28,18 @@ MESSAGE_TEMPLATES = {
         "It's lovely to hear you're having a good day. Enjoy it!",
         "So glad today feels good. Keep doing what's working for you.",
     ],
+    'daily_affirmation': [
+        "You are doing better than you think. One day at a time.",
+        "Whatever today brings, you are enough for it.",
+        "Small steps still count. Be proud of how far you've come.",
+        "You are allowed to rest, to ask for help, and to be gentle with yourself today.",
+        "Being a mum is hard. You're doing it, and that matters.",
+    ],
+    'love_bombing': [
+        "You have gotten through every hard day so far. That is not nothing, that is everything.",
+        "I know today feels heavy, but you are still here, still trying, still you. That takes real strength.",
+        "You don't have to have it all figured out today. Just breathing through this moment is enough.",
+        "Whatever this week has thrown at you, you're still standing. I'm proud of you for that.",
+        "You are so much more than how you feel right now. This stretch will pass, and I'm right here with you until it does.",
+    ],
 }
