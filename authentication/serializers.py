@@ -7,18 +7,17 @@ from .models import User, HealthcareContact
 class HealthcareContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = HealthcareContact
-        fields = ['name', 'phone', 'notes']
+        fields = ['id', 'name', 'phone', 'relationship_type', 'unique_token', 'created_at']
+        read_only_fields = ['id', 'unique_token', 'created_at']
 
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
     confirm_password = serializers.CharField(write_only=True)
-    # optional at registration — user can add this later via profile
-    healthcare_contact = HealthcareContactSerializer(required=False)
 
     class Meta:
         model = User
-        fields = ['email', 'full_name', 'country', 'password', 'confirm_password', 'healthcare_contact']
+        fields = ['email', 'full_name', 'country', 'password', 'confirm_password']
 
     def validate(self, data):
         if data['password'] != data.pop('confirm_password'):
@@ -26,7 +25,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        contact_data = validated_data.pop('healthcare_contact', None)
         user = User.objects.create_user(
             email=validated_data['email'],
             full_name=validated_data['full_name'],
@@ -35,8 +33,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         if 'country' in validated_data:
             user.country = validated_data['country']
             user.save()
-        if contact_data:
-            HealthcareContact.objects.create(user=user, **contact_data)
         return user
 
 
@@ -59,7 +55,8 @@ class LoginSerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    healthcare_contact = HealthcareContactSerializer(required=False)
+    # multiple contacts now live under /api/contacts/ — exposed here read-only for convenience
+    healthcare_contacts = HealthcareContactSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
@@ -68,21 +65,26 @@ class ProfileSerializer(serializers.ModelSerializer):
             'full_name',
             'country',
             'motherhood_stage',
+            'pregnancy_week',
+            'due_date',
+            'baby_age_months',
+            'feeding_method',
+            'stage_reason',
             'notifications_enabled',
             'created_at',
-            'healthcare_contact',
+            'healthcare_contacts',
         ]
         read_only_fields = ['email', 'created_at']
 
     def update(self, instance, validated_data):
-        contact_data = validated_data.pop('healthcare_contact', None)
         instance.full_name = validated_data.get('full_name', instance.full_name)
         instance.country = validated_data.get('country', instance.country)
         instance.motherhood_stage = validated_data.get('motherhood_stage', instance.motherhood_stage)
+        instance.pregnancy_week = validated_data.get('pregnancy_week', instance.pregnancy_week)
+        instance.due_date = validated_data.get('due_date', instance.due_date)
+        instance.baby_age_months = validated_data.get('baby_age_months', instance.baby_age_months)
+        instance.feeding_method = validated_data.get('feeding_method', instance.feeding_method)
+        instance.stage_reason = validated_data.get('stage_reason', instance.stage_reason)
         instance.notifications_enabled = validated_data.get('notifications_enabled', instance.notifications_enabled)
         instance.save()
-
-        if contact_data is not None:
-            HealthcareContact.objects.update_or_create(user=instance, defaults=contact_data)
-
         return instance

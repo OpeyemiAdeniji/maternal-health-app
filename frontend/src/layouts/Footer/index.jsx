@@ -1,25 +1,17 @@
+import { Book1, Chart, Heart, Home2, Profile2User } from 'iconsax-react';
 import { NavLink } from 'react-router-dom';
-import {
-  BookIcon,
-  ChatBubbleIcon,
-  ClipboardCheckIcon,
-  HeartIcon,
-  HomeIcon,
-  PhoneIcon,
-} from '../../components/common/icons';
 
 const TABS = [
-  { to: '/dashboard', label: 'Home', Icon: HomeIcon },
-  { to: '/checkin', label: 'Check-in', Icon: HeartIcon },
-  { to: '/journal', label: 'Journal', Icon: BookIcon },
-  { to: '/chat', label: 'Chat', Icon: ChatBubbleIcon },
-  { to: '/epds', label: 'EPDS', Icon: ClipboardCheckIcon },
-  { to: '/support', label: 'Support', Icon: PhoneIcon },
+  { to: '/dashboard', label: 'Home', Icon: Home2 },
+  { to: '/journal', label: 'Journal', Icon: Book1 },
+  { to: '/support', label: 'Support', Icon: Heart },
+  { to: '/insights', label: 'Insight', Icon: Chart },
+  { to: '/profile', label: 'You', Icon: Profile2User },
 ];
 
 export default function Footer() {
   return (
-    <footer className="fixed inset-x-0 bottom-0 z-20 flex justify-around border-t border-gray-100 bg-white px-2 py-2 shadow-[0_-4px_20px_rgba(107,78,255,0.06)] lg:hidden">
+    <footer className="fixed inset-x-0 bottom-0 z-20 flex justify-around border-t border-gray-100 bg-white px-2 py-2 shadow-[0_-4px_20px_rgba(176,15,168,0.06)] lg:hidden">
       {TABS.map(({ to, label, Icon }) => (
         <NavLink
           key={to}
@@ -37,7 +29,11 @@ export default function Footer() {
                   isActive ? 'bg-primary-100' : ''
                 }`}
               >
-                <Icon className={`h-5 w-5 ${isActive ? 'text-primary-600' : 'text-gray-400'}`} />
+                <Icon
+                  variant="Linear"
+                  color="currentColor"
+                  className={`h-5 w-5 ${isActive ? 'text-primary-600' : 'text-gray-400'}`}
+                />
               </span>
               {label}
             </>

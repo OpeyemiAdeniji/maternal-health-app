@@ -1,6 +1,8 @@
+import { Microphone2, Send2, VolumeHigh } from 'iconsax-react';
 import { useEffect, useRef, useState } from 'react';
-import { MicrophoneIcon, SendIcon, SparkleIcon } from '../../components/common/icons';
+import { SparkleIcon, SpeakerFilledIcon } from '../../components/common/icons';
 import useSpeechRecognition from '../../hooks/useSpeechRecognition';
+import useSpeechSynthesis from '../../hooks/useSpeechSynthesis';
 import api from '../../services/api';
 
 function extractErrorMessage(err) {
@@ -21,17 +23,33 @@ function ModaAvatar() {
   );
 }
 
-function MessageBubble({ message }) {
+function MessageBubble({ message, isSpeaking, onSpeak, speechSupported }) {
   const isUser = message.role === 'user';
   return (
     <div className={`flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && <ModaAvatar />}
       <div
-        className={`max-w-[75%] whitespace-pre-wrap rounded-card px-4 py-2.5 text-sm shadow-soft ${
+        className={`flex max-w-[75%] items-start gap-2 rounded-card px-4 py-2.5 text-sm shadow-soft ${
           isUser ? 'bg-primary-600 text-white' : 'border border-primary-200 bg-white text-ink'
         }`}
       >
-        {message.content}
+        <p className="whitespace-pre-wrap">{message.content}</p>
+        {!isUser && speechSupported && (
+          <button
+            type="button"
+            onClick={() => onSpeak(message.id, message.content)}
+            aria-label={isSpeaking ? 'Stop reading aloud' : 'Read message aloud'}
+            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center transition-colors ${
+              isSpeaking ? 'text-primary-600' : 'text-gray-400 hover:text-primary-500'
+            }`}
+          >
+            {isSpeaking ? (
+              <SpeakerFilledIcon className="h-4 w-4" />
+            ) : (
+              <VolumeHigh variant="Linear" color="currentColor" className="h-4 w-4" />
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -63,6 +81,7 @@ export default function Chat() {
   const bottomRef = useRef(null);
 
   const { isListening, transcript, startListening, stopListening, isSupported } = useSpeechRecognition();
+  const { speak, speakingId, isSupported: speechSupported } = useSpeechSynthesis();
 
   useEffect(() => {
     if (isListening) setInput(transcript);
@@ -109,7 +128,7 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-1 flex-col bg-primary-50">
+    <div className="flex flex-1 flex-col bg-white">
       <div className="border-b border-gray-100 bg-white px-6 py-4">
         <h1 className="text-lg font-semibold text-ink">Chat with Moda</h1>
         <p className="text-xs text-muted">Your supportive companion, here anytime you need to talk.</p>
@@ -125,7 +144,13 @@ export default function Chat() {
         )}
 
         {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
+          <MessageBubble
+            key={message.id}
+            message={message}
+            isSpeaking={speakingId === message.id}
+            onSpeak={speak}
+            speechSupported={speechSupported}
+          />
         ))}
 
         {sending && <TypingIndicator />}
@@ -151,10 +176,10 @@ export default function Chat() {
             onClick={toggleMic}
             aria-label={isListening ? 'Stop recording' : 'Start voice input'}
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${
-              isListening ? 'animate-pulse bg-red-500 text-white' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+              isListening ? 'animate-pulse bg-brand text-white' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
             }`}
           >
-            <MicrophoneIcon className="h-4 w-4" />
+            <Microphone2 variant="Linear" color="currentColor" className="h-4 w-4" />
           </button>
         )}
         <button
@@ -163,7 +188,7 @@ export default function Chat() {
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-600 text-white transition-colors hover:bg-primary-700 disabled:bg-primary-200"
           aria-label="Send message"
         >
-          <SendIcon className="h-4 w-4" />
+          <Send2 variant="Linear" color="currentColor" className="h-4 w-4" />
         </button>
       </form>
     </div>

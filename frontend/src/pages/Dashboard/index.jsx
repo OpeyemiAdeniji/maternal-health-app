@@ -1,29 +1,12 @@
+import { ArrowRight2, Book1, Cloud, Heart, MessageText1 } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  BellIcon,
-  HeartIcon,
-  SpeakerFilledIcon,
-  SpeakerIcon,
-} from '../../components/common/icons';
 import useAuth from '../../hooks/useAuth';
-import useSpeechSynthesis from '../../hooks/useSpeechSynthesis';
 import api from '../../services/api';
 import { toDateKey } from '../../utils/date';
 
 const MOOD_EMOJI = ['😔', '😕', '😐', '🙂', '😊'];
-const ROUTINE_ICONS = {
-  breath: '🌬️',
-  heart: '❤️',
-  journal: '📝',
-  walk: '🚶',
-  water: '💧',
-  rest: '😴',
-  stretch: '🤸',
-  gratitude: '🙏',
-};
+const MOOD_LABELS = ['Struggling', 'Low', 'Neutral', 'Content', 'Great'];
 
 function greetingWord() {
   const hour = new Date().getHours();
@@ -47,36 +30,113 @@ function truncate(text, max = 90) {
   return text.length > max ? `${text.slice(0, max)}…` : text;
 }
 
-function startOfWeek(date) {
-  // weeks run Monday to Sunday
-  const start = new Date(date);
-  const day = start.getDay();
-  const diffToMonday = day === 0 ? 6 : day - 1;
-  start.setDate(start.getDate() - diffToMonday);
-  start.setHours(0, 0, 0, 0);
-  return start;
+function stageBadgeLabel(user) {
+  if (!user) return '';
+  if (user.motherhood_stage === 'pregnant' && user.pregnancy_week) {
+    const week = user.pregnancy_week;
+    const trimester = week <= 12 ? 'First trimester' : week <= 27 ? 'Second trimester' : 'Third trimester';
+    return `${trimester} · week ${week}`;
+  }
+  if (user.motherhood_stage === 'postpartum' && user.baby_age_months != null) {
+    const months = user.baby_age_months;
+    return `${months} month${months === 1 ? '' : 's'} postpartum`;
+  }
+  if (user.motherhood_stage === 'seasoned') return 'Seasoned mother';
+  if (user.motherhood_stage === 'exploring') return 'Just exploring';
+  return 'Postpartum';
 }
 
-function weekAverage(checkins, weekStart) {
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekEnd.getDate() + 6);
-  const startKey = toDateKey(weekStart);
-  const endKey = toDateKey(weekEnd);
-  const inRange = checkins.filter((c) => c.date >= startKey && c.date <= endKey);
-  if (inRange.length === 0) return { average: null, count: 0 };
-  const total = inRange.reduce((sum, c) => sum + c.mood_score, 0);
-  return { average: total / inRange.length, count: inRange.length };
+function checkInStreak(checkins) {
+  if (checkins.length === 0) return 0;
+  const dateKeys = new Set(checkins.map((c) => c.date));
+  const cursor = new Date();
+  if (!dateKeys.has(toDateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+
+  let streak = 0;
+  while (dateKeys.has(toDateKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+
+function epdsStatus(lastResult) {
+  if (!lastResult) {
+    return {
+      badge: 'Start now',
+      badgeColor: 'text-primary-600',
+      body: 'Take your first wellbeing check-in.',
+    };
+  }
+
+  const daysSince = Math.floor((Date.now() - new Date(lastResult.created_at)) / 86400000);
+
+  if (daysSince < 14) {
+    return {
+      badge: 'Up to date',
+      badgeColor: 'text-[#c3c5c4]',
+      body: "You're all caught up on your wellbeing check-ins.",
+    };
+  }
+  if (daysSince < 28) {
+    return {
+      badge: '2 weeks due',
+      badgeColor: 'text-primary-600',
+      body: 'Your next wellbeing check-in is due.',
+    };
+  }
+  return {
+    badge: 'Overdue',
+    badgeColor: 'text-red-500',
+    body: "It's been a while — your wellbeing check-in is overdue.",
+  };
 }
 
 function CardEyebrow({ children }) {
   return <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">{children}</h2>;
 }
 
-function CardArrowLink({ children, onClick }) {
+function CardEyebrowIcon({ icon, label, colorClass }) {
   return (
-    <button type="button" onClick={onClick} className="mt-3 text-sm font-semibold text-brand">
-      {children} →
-    </button>
+    <h2 className={`flex items-center gap-1 text-[13px] font-medium ${colorClass}`}>
+      {icon}
+      <span>{label}</span>
+    </h2>
+  );
+}
+
+const RELATIONSHIP_LABELS = {
+  partner: 'Partner',
+  friend: 'Best Friend',
+  family: 'Family',
+  gp: 'GP',
+  midwife: 'Midwife',
+};
+
+function relationshipLabel(value) {
+  if (!value) return '';
+  return RELATIONSHIP_LABELS[value] || value;
+}
+
+function LoveNoteModal({ note, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-8 pt-16 sm:items-center">
+      <div className="w-full max-w-sm rounded-card bg-white p-6 shadow-soft">
+        <CardEyebrow>A note for you</CardEyebrow>
+        <p className="mt-3 text-base font-semibold text-ink">{note.sender_name}</p>
+        {note.sender_relationship && (
+          <p className="text-xs text-muted">{relationshipLabel(note.sender_relationship)}</p>
+        )}
+        <p className="mt-4 whitespace-pre-wrap text-sm text-ink">"{note.message_text}"</p>
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-6 w-full rounded-pill bg-brand py-3 text-sm font-semibold text-white"
+        >
+          Close
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -85,60 +145,23 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [checkins, setCheckins] = useState([]);
   const [checkInLoaded, setCheckInLoaded] = useState(false);
-  const [latestMessage, setLatestMessage] = useState(null);
-  const [dailyAffirmation, setDailyAffirmation] = useState(null);
-  const [weeklySummary, setWeeklySummary] = useState({
-    thisWeekAverage: null,
-    thisWeekCount: 0,
-    lastWeekAverage: null,
-  });
   const [loveBombing, setLoveBombing] = useState({ isTriggered: false, messages: [] });
   const [loveNote, setLoveNote] = useState(null);
-  const [routine, setRoutine] = useState(null);
+  const [loveNoteExpanded, setLoveNoteExpanded] = useState(false);
   const [latestJournalEntry, setLatestJournalEntry] = useState(null);
-  const [epdsNextDue, setEpdsNextDue] = useState(null);
-  const { speak, speakingId, isSupported: speechSupported } = useSpeechSynthesis();
+  const [epdsLastResult, setEpdsLastResult] = useState(null);
 
   useEffect(() => {
     api
       .get('/api/checkins/')
-      .then(({ data }) => {
-        setCheckins(data);
-
-        const thisWeekStart = startOfWeek(new Date());
-        const lastWeekStart = new Date(thisWeekStart);
-        lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-
-        const thisWeek = weekAverage(data, thisWeekStart);
-        const lastWeek = weekAverage(data, lastWeekStart);
-        setWeeklySummary({
-          thisWeekAverage: thisWeek.average,
-          thisWeekCount: thisWeek.count,
-          lastWeekAverage: lastWeek.average,
-        });
-      })
+      .then(({ data }) => setCheckins(data))
       .catch(() => setCheckins([]))
       .finally(() => setCheckInLoaded(true));
-
-    api
-      .get('/api/messages/latest/')
-      .then(({ data }) => setLatestMessage(data))
-      .catch(() => setLatestMessage(null));
-
-    api
-      .get('/api/messages/daily-affirmation/')
-      .then(({ data }) => setDailyAffirmation(data))
-      .catch(() => setDailyAffirmation(null));
 
     api
       .get('/api/messages/love-bombing/')
       .then(({ data }) => setLoveBombing({ isTriggered: data.is_triggered, messages: data.messages }))
       .catch(() => setLoveBombing({ isTriggered: false, messages: [] }));
-
-    api
-      .get('/api/support/routine/')
-      .then(({ data }) => setRoutine(data))
-      .catch(() => setRoutine(null));
 
     api
       .get('/api/love-notes/latest/')
@@ -152,45 +175,187 @@ export default function Dashboard() {
 
     api
       .get('/api/epds/')
-      .then(({ data }) => setEpdsNextDue(data[0]?.next_due_at || null))
-      .catch(() => setEpdsNextDue(null));
+      .then(({ data }) => setEpdsLastResult(data[0] || null))
+      .catch(() => setEpdsLastResult(null));
   }, []);
 
-  const handleMarkLoveNoteRead = () => {
+  const handleDismissLoveNote = () => {
     if (!loveNote) return;
     api.patch(`/api/love-notes/${loveNote.id}/read/`).catch(() => {});
     setLoveNote(null);
+    setLoveNoteExpanded(false);
   };
 
   const todayKey = toDateKey(new Date());
   const todayCheckIn = checkins.find((c) => c.date === todayKey) || null;
   const latestCheckIn = checkins[0] || null; // /api/checkins/ is ordered newest-first
-  const affirmationText = dailyAffirmation?.message_text || 'You are doing better than you think. One day at a time.';
-  const isSpeakingAffirmation = speakingId === 'affirmation';
   const monthLabel = new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-  const dateLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-  const epdsDaysLeft = epdsNextDue ? Math.ceil((new Date(epdsNextDue) - new Date()) / 86400000) : null;
-  const epdsStatusText =
-    epdsNextDue === null
-      ? 'Take your first wellbeing check-in.'
-      : epdsDaysLeft <= 0
-      ? "It's time for your next check-up."
-      : `Due in ${epdsDaysLeft} day${epdsDaysLeft === 1 ? '' : 's'}.`;
+  const epds = epdsStatus(epdsLastResult);
+
+  const streak = checkInStreak(checkins);
 
   return (
-    <div className="flex flex-1 flex-col gap-6 bg-white px-6 py-8">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-ink">
-            {greetingWord()}, {user?.full_name?.split(' ')[0] || 'there'}.
-          </h1>
-          <p className="mt-1 text-sm text-muted">{dateLabel}</p>
+    <div className="flex flex-1 flex-col gap-6 bg-[#eee] px-4 py-6">
+      <div>
+        <p className="text-sm font-medium text-[#1c1c1c]">
+          <span className="font-semibold">{greetingWord()},</span> {user?.full_name?.split(' ')[0] || 'there'}.
+        </p>
+
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-[#FFF0FE] px-2 py-[3px] text-xs font-medium text-[#b00fa8]">
+            {stageBadgeLabel(user)}
+          </span>
+          <span className="rounded-full bg-[#FFE5F7] px-2 py-[3px] text-xs font-medium text-[#E65FD9]">
+            Day {streak} streak
+          </span>
         </div>
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-600">
-          <BellIcon className="h-5 w-5" />
-        </span>
       </div>
+
+      <div className="flex flex-col gap-6 rounded-[24px] bg-white px-3 py-6 shadow-soft">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-base font-medium text-black">How are you feeling today?</h2>
+          <p className="text-xs leading-[1.4] tracking-[-0.12px] text-[#696969]">
+            Take a quiet moment for yourself today. However you’re feeling is okay, and worth noticing.
+          </p>
+        </div>
+        {checkInLoaded && (
+          todayCheckIn ? (
+            <p className="text-sm font-semibold text-green-600">Checked in today ✓</p>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navigate('/checkin')}
+              className="flex items-center justify-between rounded-full bg-primary-600 p-3 text-white"
+            >
+              <span className="text-[13px]">Start check-in</span>
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary-600">
+                <ArrowRight2 variant="Linear" color="currentColor" className="h-3.5 w-3.5" />
+              </span>
+            </button>
+          )
+        )}
+      </div>
+
+      <div className="rounded-[24px] bg-white px-3 py-5 shadow-soft">
+        <div className="flex items-center justify-between">
+          <CardEyebrowIcon
+            icon={<MessageText1 variant="Linear" color="currentColor" className="h-4 w-4" />}
+            label="YOUR COMPANION"
+            colorClass="text-[#f48b41]"
+          />
+        </div>
+        <div className="mt-4 flex flex-col gap-2">
+          <p className="text-sm tracking-[-0.14px] text-black">
+            Moda is here whenever you need her. Tap to start a conversation.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/chat')}
+            className="flex items-center gap-1 text-[13px] text-primary-600"
+          >
+            Talk to Moda
+            <ArrowRight2 variant="Linear" color="currentColor" className="h-2.5 w-2.5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-[24px] bg-white px-3 py-4 shadow-soft">
+        <div className="flex items-center justify-between">
+          <CardEyebrowIcon
+            icon={<Cloud size={20} variant="Linear" color="currentColor" />}
+            label="EMOTIONAL SNAPSHOT"
+            colorClass="text-[#28a668]"
+          />
+          <button
+            type="button"
+            onClick={() => navigate('/mood-history')}
+            className="flex items-center gap-1.5 text-sm font-medium text-[#c3c5c4]"
+          >
+            {monthLabel}
+            <ArrowRight2 variant="Linear" color="currentColor" className="h-4 w-4" />
+          </button>
+        </div>
+        {latestCheckIn ? (
+          <div className="mt-4 flex flex-col gap-1">
+            <p className="flex items-center gap-1 text-base font-medium tracking-[-0.16px] text-black">
+              {MOOD_LABELS[latestCheckIn.mood_score - 1]}
+              <span className="text-sm">{MOOD_EMOJI[latestCheckIn.mood_score - 1]}</span>
+            </p>
+            <p className="text-xs tracking-[-0.12px] text-[#696969]">
+              Last checked-in . {relativeDayLabel(latestCheckIn.date)}
+            </p>
+          </div>
+        ) : (
+          <p className="mt-4 text-sm text-muted">No check-ins yet.</p>
+        )}
+      </div>
+
+      <div className="rounded-[24px] bg-white px-3 py-5 shadow-soft">
+        <div className="flex items-center justify-between">
+          <CardEyebrowIcon
+            icon={<Book1 variant="Linear" color="currentColor" className="h-4 w-4" />}
+            label="JOURNAL"
+            colorClass="text-[#0187e6]"
+          />
+          <span className="text-sm font-medium text-[#c3c5c4]">
+            {latestJournalEntry ? relativeDayLabel(latestJournalEntry.created_at.slice(0, 10)) : '—'}
+          </span>
+        </div>
+        <div className="mt-4 flex flex-col gap-2">
+          <p className="truncate text-sm tracking-[-0.14px] text-black">
+            {latestJournalEntry ? truncate(latestJournalEntry.body_text, 60) : "You haven't written an entry yet."}
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/journal')}
+            className="flex items-center gap-1 text-[13px] text-primary-600"
+          >
+            Start reflection
+            <ArrowRight2 variant="Linear" color="currentColor" className="h-2.5 w-2.5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-[24px] bg-white px-3 py-5 shadow-soft">
+        <div className="flex items-center justify-between">
+          <CardEyebrowIcon
+            icon={<Heart variant="Linear" color="currentColor" className="h-4 w-4" />}
+            label="WELLBEING CHECK-UP"
+            colorClass="text-[#f48b41]"
+          />
+          <span className={`text-sm font-medium ${epds.badgeColor}`}>{epds.badge}</span>
+        </div>
+        <div className="mt-4 flex flex-col gap-2">
+          <p className="text-sm tracking-[-0.14px] text-black">{epds.body}</p>
+          <button
+            type="button"
+            onClick={() => navigate('/epds')}
+            className="flex items-center gap-1 text-[13px] text-primary-600"
+          >
+            Take assessment
+            <ArrowRight2 variant="Linear" color="currentColor" className="h-2.5 w-2.5" />
+          </button>
+        </div>
+      </div>
+
+      {loveNote && (
+        <button
+          type="button"
+          onClick={() => setLoveNoteExpanded(true)}
+          className="rounded-card bg-white p-6 text-left shadow-soft"
+        >
+          <CardEyebrow>A note for you</CardEyebrow>
+          <p className="mt-2 text-sm text-ink">
+            <span className="font-semibold">{loveNote.sender_name}:</span> "{truncate(loveNote.message_text)}"
+          </p>
+          <span className="mt-3 inline-block text-sm font-semibold text-brand">Read →</span>
+        </button>
+      )}
+
+      {loveNote && loveNoteExpanded && (
+        <LoveNoteModal note={loveNote} onClose={handleDismissLoveNote} />
+      )}
 
       {loveBombing.isTriggered && (
         <div className="rounded-card bg-white p-6 shadow-soft">
@@ -198,136 +363,11 @@ export default function Dashboard() {
           <div className="mt-3 space-y-2.5">
             {loveBombing.messages.map((message, index) => (
               <p key={index} className="flex items-start gap-2 text-sm text-ink">
-                <HeartIcon className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
+                <Heart variant="Linear" color="currentColor" className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
                 <span>{message}</span>
               </p>
             ))}
           </div>
-        </div>
-      )}
-
-      {loveNote && (
-        <div className="rounded-card bg-white p-6 shadow-soft">
-          <CardEyebrow>A note for you</CardEyebrow>
-          <p className="mt-2 text-sm text-ink">
-            <span className="font-semibold">{loveNote.sender_name}:</span> "{truncate(loveNote.message_text)}"
-          </p>
-          <CardArrowLink onClick={handleMarkLoveNoteRead}>Read</CardArrowLink>
-        </div>
-      )}
-
-      <div className="rounded-card bg-white p-6 shadow-soft">
-        <CardEyebrow>Your companion</CardEyebrow>
-        <p className="mt-2 text-sm text-muted">Moda is here whenever you need her. Tap to start a conversation.</p>
-        <CardArrowLink onClick={() => navigate('/chat')}>Talk to Moda</CardArrowLink>
-      </div>
-
-      <div className="rounded-card bg-white p-6 shadow-soft">
-        <CardEyebrow>How are you feeling?</CardEyebrow>
-        <p className="mt-2 text-sm text-muted">Take a quiet moment for yourself today.</p>
-        {checkInLoaded && (
-          todayCheckIn ? (
-            <p className="mt-3 text-sm font-semibold text-green-600">Checked in today ✓</p>
-          ) : (
-            <CardArrowLink onClick={() => navigate('/checkin')}>Start check-in</CardArrowLink>
-          )
-        )}
-      </div>
-
-      <div className="rounded-card bg-white p-6 shadow-soft">
-        <div className="flex items-center justify-between">
-          <CardEyebrow>Emotional snapshot</CardEyebrow>
-          <span className="text-xs text-muted">{monthLabel}</span>
-        </div>
-        {latestCheckIn ? (
-          <div className="mt-3 flex items-center gap-3">
-            <span className="text-3xl">{MOOD_EMOJI[latestCheckIn.mood_score - 1]}</span>
-            <span className="text-sm text-muted">Last checked-in · {relativeDayLabel(latestCheckIn.date)}</span>
-          </div>
-        ) : (
-          <p className="mt-3 text-sm text-muted">No check-ins yet.</p>
-        )}
-        <CardArrowLink onClick={() => navigate('/insights')}>View history</CardArrowLink>
-      </div>
-
-      <div className="rounded-card bg-white p-6 shadow-soft">
-        <CardEyebrow>Journal</CardEyebrow>
-        {latestJournalEntry ? (
-          <>
-            <p className="mt-1 text-xs text-muted">{relativeDayLabel(latestJournalEntry.created_at.slice(0, 10))}</p>
-            <p className="mt-1 text-sm text-ink">{truncate(latestJournalEntry.body_text)}</p>
-          </>
-        ) : (
-          <p className="mt-2 text-sm text-muted">You haven't written an entry yet.</p>
-        )}
-        <CardArrowLink onClick={() => navigate('/journal')}>Start reflection</CardArrowLink>
-      </div>
-
-      <div className="rounded-card bg-white p-6 shadow-soft">
-        <CardEyebrow>Wellbeing check-up</CardEyebrow>
-        <p className="mt-2 text-sm text-muted">{epdsStatusText}</p>
-        <CardArrowLink onClick={() => navigate('/epds')}>Take assessment</CardArrowLink>
-      </div>
-
-      <div className="rounded-card bg-white p-6 shadow-soft">
-        <div className="flex items-center justify-between gap-2">
-          <CardEyebrow>Your daily affirmation</CardEyebrow>
-          {speechSupported && (
-            <button
-              type="button"
-              onClick={() => speak('affirmation', affirmationText)}
-              aria-label={isSpeakingAffirmation ? 'Stop reading aloud' : 'Read affirmation aloud'}
-              className={`flex h-6 w-6 shrink-0 items-center justify-center transition-colors ${
-                isSpeakingAffirmation ? 'text-primary-600' : 'text-gray-400 hover:text-primary-500'
-              }`}
-            >
-              {isSpeakingAffirmation ? <SpeakerFilledIcon className="h-4 w-4" /> : <SpeakerIcon className="h-4 w-4" />}
-            </button>
-          )}
-        </div>
-        <p className="mt-3 text-base italic text-ink">"{affirmationText}"</p>
-      </div>
-
-      <div className="rounded-card bg-white p-6 shadow-soft">
-        <CardEyebrow>This week</CardEyebrow>
-        {weeklySummary.thisWeekCount < 3 ? (
-          <p className="mt-3 text-sm text-muted">Not enough data yet. Keep checking in.</p>
-        ) : (
-          <>
-            <div className="mt-2 flex items-end gap-2">
-              <span className="text-4xl font-semibold text-ink">{weeklySummary.thisWeekAverage.toFixed(1)}</span>
-              {weeklySummary.lastWeekAverage !== null &&
-                (weeklySummary.thisWeekAverage >= weeklySummary.lastWeekAverage ? (
-                  <ArrowUpIcon className="h-5 w-5 text-green-500" />
-                ) : (
-                  <ArrowDownIcon className="h-5 w-5 text-red-500" />
-                ))}
-            </div>
-            <p className="mt-1 text-xs text-muted">
-              Last week: {weeklySummary.lastWeekAverage !== null ? weeklySummary.lastWeekAverage.toFixed(1) : '—'}
-            </p>
-          </>
-        )}
-      </div>
-
-      {routine && (
-        <div className="rounded-card bg-white p-6 shadow-soft">
-          <CardEyebrow>Today's self-care</CardEyebrow>
-          <div className="mt-3 flex items-center gap-2">
-            <span className="text-2xl">{ROUTINE_ICONS[routine.icon] || '🌿'}</span>
-            <h3 className="text-base font-bold text-ink">{routine.title}</h3>
-          </div>
-          <p className="mt-2 text-sm text-muted">{routine.description}</p>
-          <span className="mt-3 inline-block rounded-pill bg-primary-100 px-3 py-1 text-xs font-medium text-primary-700">
-            {routine.duration}
-          </span>
-        </div>
-      )}
-
-      {latestMessage && (
-        <div className="rounded-card bg-white p-6 shadow-soft">
-          <CardEyebrow>A message for you</CardEyebrow>
-          <p className="mt-2 text-sm italic text-muted">"{latestMessage.message_text}"</p>
         </div>
       )}
     </div>

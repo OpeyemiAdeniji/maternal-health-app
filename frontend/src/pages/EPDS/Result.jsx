@@ -1,7 +1,7 @@
+import { Call } from 'iconsax-react';
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
-import { PhoneIcon } from '../../components/common/icons';
 
 const BUCKETS = {
   low: {
@@ -63,7 +63,7 @@ export default function Result() {
               onClick={() => navigate('/support')}
               className="mt-4 flex items-center gap-1.5 text-sm font-semibold text-red-700 underline"
             >
-              <PhoneIcon className="h-4 w-4" />
+              <Call variant="Linear" color="currentColor" className="h-4 w-4" />
               View support resources
             </button>
           )}
