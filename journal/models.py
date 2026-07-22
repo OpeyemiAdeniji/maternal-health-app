@@ -4,12 +4,19 @@ from django.conf import settings
 
 class JournalEntry(models.Model):
     MOOD_CHOICES = [
-        ('Anxious', 'Anxious'),
-        ('Hopeful', 'Hopeful'),
-        ('Tired', 'Tired'),
-        ('Calm', 'Calm'),
-        ('Overwhelmed', 'Overwhelmed'),
-        ('Grateful', 'Grateful'),
+        ('struggling', 'Struggling'),
+        ('overwhelmed', 'Overwhelmed'),
+        ('exhausted', 'Exhausted'),
+        ('low', 'Low'),
+        ('anxious', 'Anxious'),
+        ('tired', 'Tired'),
+        ('okay', 'Okay'),
+        ('neutral', 'Neutral'),
+        ('hopeful', 'Hopeful'),
+        ('calm', 'Calm'),
+        ('grateful', 'Grateful'),
+        ('happy', 'Happy'),
+        ('energised', 'Energised'),
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='journal_entries')

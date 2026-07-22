@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-brand: #b00fa8;
+}
+
 body {
   @apply bg-white text-[#2d2d2d] font-sans antialiased;
+}
+
+@layer components {
+  /* underline-only input style from the magenta onboarding design — no fill, no rounded box */
+  .input-underline {
+    @apply w-full border-b border-[#c5c5c5] bg-transparent py-3 text-base text-text-primary placeholder-[#bebebe] outline-none transition-colors focus:border-brand;
+  }
 }

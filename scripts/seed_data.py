@@ -118,7 +118,7 @@ USERS = [
         'healthcare_contact': {
             'name': 'Dr. Aoife Kelly',
             'phone': '01 234 5678',
-            'notes': "Emma's GP, Riverside Medical Centre.",
+            'relationship_type': 'gp',
         },
     },
 ]
@@ -194,7 +194,7 @@ def _seed_epds_result(user, score):
 
 
 def _seed_healthcare_contact(user, contact):
-    HealthcareContact.objects.get_or_create(user=user, defaults=contact)
+    HealthcareContact.objects.get_or_create(user=user, name=contact['name'], defaults=contact)
 
 
 def seed():

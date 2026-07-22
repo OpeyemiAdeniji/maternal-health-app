@@ -19,7 +19,7 @@ export default function Button({
       type={type}
       disabled={disabled}
       onClick={onClick}
-      className={`rounded-pill px-6 py-3 text-base font-semibold transition-all duration-200 disabled:cursor-not-allowed ${VARIANTS[variant]} ${fullWidth ? 'w-full' : ''} ${className}`}
+      className={`flex h-11 items-center justify-center rounded-input px-6 text-base font-semibold transition-all duration-200 disabled:cursor-not-allowed ${VARIANTS[variant]} ${fullWidth ? 'w-full' : ''} ${className}`}
     >
       {children}
     </button>

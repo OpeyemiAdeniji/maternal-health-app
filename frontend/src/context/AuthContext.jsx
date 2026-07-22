@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from 'react';
 import api, { ACCESS_TOKEN_KEY } from '../services/api';
+import { requestNotificationPermission } from '../utils/notifications';
 
 const REFRESH_TOKEN_KEY = 'modacare_refresh_token';
 const USER_KEY = 'modacare_user';
@@ -22,6 +23,10 @@ export function AuthProvider({ children }) {
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
     setUser(data.user);
     setIsAuthenticated(true);
+
+    // fire and forget — prompts for permission and saves the token if granted
+    requestNotificationPermission();
+
     return data.user;
   };
 

@@ -1,7 +1,7 @@
+import { TickCircle } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
-import { CheckCircleIcon } from '../../components/common/icons';
 import api from '../../services/api';
 
 const MOOD_OPTIONS = [
@@ -19,6 +19,11 @@ const SLEEP_OPTIONS = [
   { value: 4, emoji: '😌', label: 'Good' },
   { value: 5, emoji: '✨', label: 'Great' },
 ];
+
+function formatCheckinDate(dateKey) {
+  const [year, month, day] = dateKey.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 
 function extractErrorMessage(err) {
   const data = err.response?.data;
@@ -40,7 +45,10 @@ function ScaleSelector({ name, options, value, onChange }) {
             key={option.value}
             type="button"
             name={name}
-            onClick={() => onChange(option.value)}
+            onClick={() => {
+              if ('vibrate' in navigator) navigator.vibrate(10);
+              onChange(option.value);
+            }}
             className="flex flex-col items-center gap-2"
           >
             <span
@@ -82,7 +90,7 @@ function SuccessCheck() {
         shown ? 'scale-100 opacity-100' : 'scale-50 opacity-0'
       }`}
     >
-      <CheckCircleIcon className="h-11 w-11" />
+      <TickCircle variant="Linear" color="currentColor" className="h-11 w-11" />
     </span>
   );
 }
@@ -95,8 +103,18 @@ export default function CheckIn() {
   const [error, setError] = useState('');
   const [supportiveMessage, setSupportiveMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
 
   const canSubmit = moodScore && sleepScore && !submitting;
+
+  useEffect(() => {
+    api
+      .get('/api/checkins/')
+      .then(({ data }) => setHistory(data.slice(0, 7))) // already ordered newest-first
+      .catch(() => setHistory([]))
+      .finally(() => setHistoryLoaded(true));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -129,7 +147,7 @@ export default function CheckIn() {
 
   if (supportiveMessage) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-primary-50 px-6 py-16 text-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-white px-6 py-16 text-center">
         <SuccessCheck />
         <h1 className="text-xl font-semibold text-ink">Check-in saved</h1>
         <p className="max-w-xs text-sm text-muted">{supportiveMessage}</p>
@@ -141,7 +159,7 @@ export default function CheckIn() {
   }
 
   return (
-    <div className="flex flex-1 flex-col bg-primary-50 px-6 py-10">
+    <div className="flex flex-1 flex-col bg-white px-6 py-10">
       <h1 className="text-center text-2xl font-semibold text-ink">How are you today?</h1>
 
       <form onSubmit={handleSubmit} className="mx-auto mt-8 w-full max-w-md space-y-6">
@@ -172,6 +190,31 @@ export default function CheckIn() {
           {submitting ? 'Submitting…' : 'Submit check-in'}
         </Button>
       </form>
+
+      <div className="mx-auto mt-10 w-full max-w-md">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Recent Check-ins</h2>
+
+        {!historyLoaded ? (
+          <p className="text-sm text-muted">Loading…</p>
+        ) : history.length === 0 ? (
+          <p className="text-sm text-muted">No check-ins yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {history.map((checkin) => (
+              <div key={checkin.id} className="flex items-center gap-3 rounded-card bg-white p-4 shadow-soft">
+                <span className="w-14 shrink-0 text-xs text-muted">{formatCheckinDate(checkin.date)}</span>
+                <span className="text-xl" title={MOOD_OPTIONS[checkin.mood_score - 1]?.label}>
+                  {MOOD_OPTIONS[checkin.mood_score - 1]?.emoji}
+                </span>
+                <span className="text-xl" title={SLEEP_OPTIONS[checkin.sleep_score - 1]?.label}>
+                  {SLEEP_OPTIONS[checkin.sleep_score - 1]?.emoji}
+                </span>
+                {checkin.trigger_note && <span className="truncate text-sm text-muted">{checkin.trigger_note}</span>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

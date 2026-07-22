@@ -20,3 +20,11 @@ class JournalEntryListCreateView(generics.ListCreateAPIView):
         sid = SentimentIntensityAnalyzer()
         score = sid.polarity_scores(serializer.validated_data['body_text'])['compound']
         serializer.save(user=self.request.user, sentiment_score=score)
+
+
+class JournalEntryDetailView(generics.DestroyAPIView):
+    serializer_class = JournalEntrySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return JournalEntry.objects.filter(user=self.request.user)

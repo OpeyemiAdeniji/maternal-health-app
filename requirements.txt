@@ -9,6 +9,15 @@ scipy==1.11.4
 ruptures==1.1.9
 statsmodels==0.14.1
 nltk==3.8.1
-anthropic==0.25.0
+firebase-admin==6.5.0
+APScheduler==3.11.3
+django-apscheduler==0.7.0
 pytest==7.4.4
 pytest-django==4.7.0
+anthropic==0.116.0
+httpx==0.28.1
+twilio==9.10.9
+sendgrid==6.12.5
+gunicorn==23.0.0
+whitenoise==6.11.0
+dj-database-url==3.0.1

@@ -1,9 +1,10 @@
+import { Lock, Sms } from 'iconsax-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Logo from '../../components/common/Logo';
-import Input from '../../components/common/Input';
-import Button from '../../components/common/Button';
 import useAuth from '../../hooks/useAuth';
+import AuthButton from './components/AuthButton';
+import AuthInput from './components/AuthInput';
+import SocialButtons from './components/SocialButtons';
 
 export default function Login() {
   const { login } = useAuth();
@@ -29,26 +30,26 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-primary-50 px-6 py-12">
-      <div className="w-full max-w-sm rounded-card bg-white p-6 shadow-soft">
-        <div className="text-center">
-          <Logo size="md" className="block" />
-          <p className="mt-2 text-sm text-muted">Your maternal wellbeing companion</p>
-        </div>
+    <div className="flex min-h-screen flex-col bg-white px-6 py-12">
+      <div className="mx-auto w-full max-w-sm">
+        <h1 className="text-2xl font-semibold text-text-primary">Login</h1>
+        <p className="mt-2 text-sm tracking-[2px] text-text-secondary">
+          Your data is private and encrypted, we only ask for what we need to support you.
+        </p>
 
-        <h1 className="mt-8 text-2xl font-semibold text-ink">Welcome back</h1>
-
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-          <Input
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          <AuthInput
             label="Email Address"
+            icon={<Sms variant="Linear" color="currentColor" className="h-6 w-6" />}
             type="email"
             name="email"
             placeholder="Enter email"
             value={form.email}
             onChange={handleChange}
           />
-          <Input
+          <AuthInput
             label="Password"
+            icon={<Lock variant="Linear" color="currentColor" className="h-6 w-6" />}
             type="password"
             name="password"
             placeholder="Enter password"
@@ -59,19 +60,22 @@ export default function Login() {
           {error && <p className="text-sm text-red-500">{error}</p>}
 
           <div className="text-right">
-            {/* password reset isn't built yet — kept as a visual placeholder to match the design */}
-            <span className="text-sm font-medium text-primary-600">Forgot password?</span>
+            <Link to="/forgot-password" className="text-sm font-medium text-brand">
+              Forgot password?
+            </Link>
           </div>
 
-          <Button type="submit" disabled={submitting}>
+          <AuthButton type="submit" disabled={submitting}>
             {submitting ? 'Logging in…' : 'Log In'}
-          </Button>
+          </AuthButton>
+
+          <SocialButtons />
         </form>
 
-        <p className="mt-6 text-center text-sm text-muted">
+        <p className="mt-6 text-center text-sm text-text-secondary">
           Don't have an account?{' '}
-          <Link to="/register" className="font-semibold text-primary-600">
-            Register
+          <Link to="/register" className="font-semibold text-brand">
+            Sign up
           </Link>
         </p>
       </div>

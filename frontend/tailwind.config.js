@@ -3,34 +3,41 @@ export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
-      // purple scale pulled directly from the Figma "Modacare" file's fills
+      // magenta scale built around the Modacare brand colour #b00fa8
       colors: {
         primary: {
-          50: '#F5F3FF', // page background — soft lavender white
-          100: '#E8E3FF', // accent
-          200: '#D9D1FF',
-          300: '#BFAFFF',
-          400: '#9B85FF',
-          500: '#8267FF',
-          600: '#6B4EFF', // brand purple used for the wordmark, primary CTAs, icons
-          700: '#5636E0',
-          800: '#4527B3',
-          900: '#341D80',
+          50: '#FDF1FC',
+          100: '#FBE0F8',
+          200: '#F5C0F1',
+          300: '#EA8FE4',
+          400: '#DA5AD1',
+          500: '#C42DB9',
+          600: '#B00FA8', // brand magenta used for the wordmark, primary CTAs, icons
+          700: '#8C0C85',
+          800: '#6C0A67',
+          900: '#4F074A',
         },
-        ink: '#1A1A2E', // primary text
-        muted: '#6B7280', // secondary text
-        accent: '#E8E3FF',
+        ink: '#2d2d2d', // primary text
+        muted: '#737373', // secondary text
+        accent: '#FBE0F8',
+        // named brand tokens — same colours as the primary scale, kept for the Auth/SafetyNet pages
+        brand: '#b00fa8',
+        'text-primary': '#2d2d2d',
+        'text-secondary': '#737373',
+        'input-underline': '#c5c5c5',
+        'input-placeholder': '#bebebe',
+        divider: '#e5e5e5',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
-        card: '16px',
+        card: '12px',
         input: '12px',
         pill: '50px',
       },
       boxShadow: {
-        soft: '0 4px 20px rgba(107, 78, 255, 0.08)',
+        soft: '0 4px 20px rgba(176, 15, 168, 0.08)',
       },
     },
   },
