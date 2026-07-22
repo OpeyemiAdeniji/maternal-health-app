@@ -1,14 +1,16 @@
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
 
+const swParams = new URLSearchParams(self.location.search);
+
 firebase.initializeApp({
-  apiKey: 'AIzaSyBLUkzZM5w3t4Dcfq38wgPzsdvzQdiCKHs',
-  authDomain: 'modacare-f8fd0.firebaseapp.com',
-  projectId: 'modacare-f8fd0',
-  storageBucket: 'modacare-f8fd0.firebasestorage.app',
-  messagingSenderId: '460515807123',
-  appId: '1:460515807123:web:26bf5ab27c532b786a6266',
-  measurementId: 'G-FVSXWJ1M8G',
+  apiKey: swParams.get('apiKey'),
+  authDomain: swParams.get('authDomain'),
+  projectId: swParams.get('projectId'),
+  storageBucket: swParams.get('storageBucket'),
+  messagingSenderId: swParams.get('messagingSenderId'),
+  appId: swParams.get('appId'),
+  measurementId: swParams.get('measurementId'),
 });
 
 const messaging = firebase.messaging();
