@@ -1,4 +1,5 @@
 export const ROUTES = {
+  WELCOME: '/',
   LOGIN: '/login',
   REGISTER: '/register',
   FORGOT_PASSWORD: '/forgot-password',

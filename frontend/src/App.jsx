@@ -4,6 +4,7 @@ import { ROUTES } from './routes';
 import PrivateRoute from './routes/privateRoute';
 import ProtectedRoute from './routes/protectedRoute';
 import Main from './layouts/Main';
+import Welcome from './pages/Welcome';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import ForgotPassword from './pages/Auth/ForgotPassword';
@@ -34,8 +35,6 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to={ROUTES.LOGIN} replace />} />
-
           {/* public — opened from a Safety Net contact's own link, no login involved */}
           <Route path={ROUTES.SAFETY_NET} element={<SafetyNet />} />
 
@@ -44,6 +43,7 @@ function App() {
           <Route path={ROUTES.RESET_PASSWORD} element={<ResetPassword />} />
 
           <Route element={<ProtectedRoute />}>
+            <Route path={ROUTES.WELCOME} element={<Welcome />} />
             <Route path={ROUTES.LOGIN} element={<Login />} />
             <Route path={ROUTES.REGISTER} element={<Register />} />
           </Route>
