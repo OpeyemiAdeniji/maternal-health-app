@@ -71,6 +71,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'feeding_method',
             'stage_reason',
             'notifications_enabled',
+            'epds_prompt_dismissed_at',
             'created_at',
             'healthcare_contacts',
         ]
@@ -86,5 +87,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         instance.feeding_method = validated_data.get('feeding_method', instance.feeding_method)
         instance.stage_reason = validated_data.get('stage_reason', instance.stage_reason)
         instance.notifications_enabled = validated_data.get('notifications_enabled', instance.notifications_enabled)
+        instance.epds_prompt_dismissed_at = validated_data.get(
+            'epds_prompt_dismissed_at', instance.epds_prompt_dismissed_at
+        )
         instance.save()
         return instance

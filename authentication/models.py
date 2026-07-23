@@ -65,6 +65,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     # device push token for FCM — blank until the user grants notification permission
     fcm_token = models.TextField(blank=True, default='')
     notifications_enabled = models.BooleanField(default=True)
+    # last time the user dismissed the post-registration EPDS nudge — null until dismissed once
+    epds_prompt_dismissed_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

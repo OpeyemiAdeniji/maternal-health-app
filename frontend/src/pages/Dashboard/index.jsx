@@ -63,8 +63,8 @@ function checkInStreak(checkins) {
 function epdsStatus(lastResult) {
   if (!lastResult) {
     return {
-      badge: 'Start now',
-      badgeColor: 'text-primary-600',
+      badge: 'Due now',
+      badgeColor: 'text-yellow-800',
       body: 'Take your first wellbeing check-in.',
     };
   }
@@ -73,15 +73,15 @@ function epdsStatus(lastResult) {
 
   if (daysSince < 14) {
     return {
-      badge: 'Up to date',
-      badgeColor: 'text-[#c3c5c4]',
+      badge: 'On track',
+      badgeColor: 'text-green-800',
       body: "You're all caught up on your wellbeing check-ins.",
     };
   }
   if (daysSince < 28) {
     return {
       badge: '2 weeks due',
-      badgeColor: 'text-primary-600',
+      badgeColor: 'text-yellow-800',
       body: 'Your next wellbeing check-in is due.',
     };
   }
@@ -118,6 +118,32 @@ function relationshipLabel(value) {
   return RELATIONSHIP_LABELS[value] || value;
 }
 
+function EpdsPromptModal({ onTakeAssessment, onDismiss }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-8 pt-16 sm:items-center">
+      <div className="w-full max-w-sm rounded-card bg-white p-6 shadow-soft">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-primary-600">
+          <Heart variant="Linear" color="currentColor" className="h-6 w-6" />
+        </span>
+        <h2 className="mt-4 text-base font-semibold text-ink">Let's check in on how you're feeling</h2>
+        <p className="mt-2 text-sm text-muted">
+          This quick 10-question assessment helps us understand how to support you.
+        </p>
+        <button
+          type="button"
+          onClick={onTakeAssessment}
+          className="mt-6 w-full rounded-pill bg-brand py-3 text-sm font-semibold text-white"
+        >
+          Take Assessment
+        </button>
+        <button type="button" onClick={onDismiss} className="mt-3 w-full py-2 text-sm font-medium text-muted">
+          Not now
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function LoveNoteModal({ note, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-8 pt-16 sm:items-center">
@@ -150,6 +176,10 @@ export default function Dashboard() {
   const [loveNoteExpanded, setLoveNoteExpanded] = useState(false);
   const [latestJournalEntry, setLatestJournalEntry] = useState(null);
   const [epdsLastResult, setEpdsLastResult] = useState(null);
+  const [epdsResultsLoaded, setEpdsResultsLoaded] = useState(false);
+  const [epdsPromptDismissedAt, setEpdsPromptDismissedAt] = useState(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [showEpdsPrompt, setShowEpdsPrompt] = useState(false);
 
   useEffect(() => {
     api
@@ -176,14 +206,47 @@ export default function Dashboard() {
     api
       .get('/api/epds/')
       .then(({ data }) => setEpdsLastResult(data[0] || null))
-      .catch(() => setEpdsLastResult(null));
+      .catch(() => setEpdsLastResult(null))
+      .finally(() => setEpdsResultsLoaded(true));
+
+    api
+      .get('/api/auth/profile/')
+      .then(({ data }) => setEpdsPromptDismissedAt(data.epds_prompt_dismissed_at))
+      .catch(() => setEpdsPromptDismissedAt(null))
+      .finally(() => setProfileLoaded(true));
   }, []);
+
+  // post-registration nudge: only for users who've never completed an assessment,
+  // shown a few seconds after the dashboard loads, at most once a day
+  useEffect(() => {
+    if (!epdsResultsLoaded || !profileLoaded || epdsLastResult) return;
+
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const dismissedRecently =
+      epdsPromptDismissedAt && Date.now() - new Date(epdsPromptDismissedAt).getTime() < oneDayMs;
+    if (dismissedRecently) return;
+
+    const timer = setTimeout(() => setShowEpdsPrompt(true), 2500);
+    return () => clearTimeout(timer);
+  }, [epdsResultsLoaded, profileLoaded, epdsLastResult, epdsPromptDismissedAt]);
 
   const handleDismissLoveNote = () => {
     if (!loveNote) return;
     api.patch(`/api/love-notes/${loveNote.id}/read/`).catch(() => {});
     setLoveNote(null);
     setLoveNoteExpanded(false);
+  };
+
+  const handleDismissEpdsPrompt = () => {
+    setShowEpdsPrompt(false);
+    const now = new Date().toISOString();
+    setEpdsPromptDismissedAt(now);
+    api.patch('/api/auth/profile/', { epds_prompt_dismissed_at: now }).catch(() => {});
+  };
+
+  const handleTakeAssessmentFromPrompt = () => {
+    setShowEpdsPrompt(false);
+    navigate('/epds');
   };
 
   const todayKey = toDateKey(new Date());
@@ -207,7 +270,7 @@ export default function Dashboard() {
             {stageBadgeLabel(user)}
           </span>
           <span className="rounded-full bg-[#FFE5F7] px-2 py-[3px] text-xs font-medium text-[#E65FD9]">
-            Day {streak} streak
+            {todayCheckIn ? `Day ${streak} · Checked in` : `Day ${streak} streak`}
           </span>
         </div>
       </div>
@@ -220,20 +283,16 @@ export default function Dashboard() {
           </p>
         </div>
         {checkInLoaded && (
-          todayCheckIn ? (
-            <p className="text-sm font-semibold text-green-600">Checked in today ✓</p>
-          ) : (
-            <button
-              type="button"
-              onClick={() => navigate('/checkin')}
-              className="flex items-center justify-between rounded-full bg-primary-600 p-3 text-white"
-            >
-              <span className="text-[13px]">Start check-in</span>
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary-600">
-                <ArrowRight2 variant="Linear" color="currentColor" className="h-3.5 w-3.5" />
-              </span>
-            </button>
-          )
+          <button
+            type="button"
+            onClick={() => navigate('/checkin')}
+            className="flex items-center justify-between rounded-full bg-primary-600 p-3 text-white"
+          >
+            <span className="text-[13px]">Start check-in</span>
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-primary-600">
+              <ArrowRight2 variant="Linear" color="currentColor" className="h-3.5 w-3.5" />
+            </span>
+          </button>
         )}
       </div>
 
@@ -270,10 +329,9 @@ export default function Dashboard() {
           <button
             type="button"
             onClick={() => navigate('/mood-history')}
-            className="flex items-center gap-1.5 text-sm font-medium text-[#c3c5c4]"
+            className="text-sm font-medium text-[#c3c5c4]"
           >
             {monthLabel}
-            <ArrowRight2 variant="Linear" color="currentColor" className="h-4 w-4" />
           </button>
         </div>
         {latestCheckIn ? (
@@ -355,6 +413,10 @@ export default function Dashboard() {
 
       {loveNote && loveNoteExpanded && (
         <LoveNoteModal note={loveNote} onClose={handleDismissLoveNote} />
+      )}
+
+      {showEpdsPrompt && (
+        <EpdsPromptModal onTakeAssessment={handleTakeAssessmentFromPrompt} onDismiss={handleDismissEpdsPrompt} />
       )}
 
       {loveBombing.isTriggered && (
