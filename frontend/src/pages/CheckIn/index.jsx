@@ -203,11 +203,13 @@ export default function CheckIn() {
             {history.map((checkin) => (
               <div key={checkin.id} className="flex items-center gap-3 rounded-card bg-white p-4 shadow-soft">
                 <span className="w-14 shrink-0 text-xs text-muted">{formatCheckinDate(checkin.date)}</span>
-                <span className="text-xl" title={MOOD_OPTIONS[checkin.mood_score - 1]?.label}>
-                  {MOOD_OPTIONS[checkin.mood_score - 1]?.emoji}
+                <span className="flex flex-col items-center">
+                  <span className="text-xl">{MOOD_OPTIONS[checkin.mood_score - 1]?.emoji}</span>
+                  <span className="text-[10px] text-muted">{MOOD_OPTIONS[checkin.mood_score - 1]?.label}</span>
                 </span>
-                <span className="text-xl" title={SLEEP_OPTIONS[checkin.sleep_score - 1]?.label}>
-                  {SLEEP_OPTIONS[checkin.sleep_score - 1]?.emoji}
+                <span className="flex flex-col items-center">
+                  <span className="text-xl">{SLEEP_OPTIONS[checkin.sleep_score - 1]?.emoji}</span>
+                  <span className="text-[10px] text-muted">{SLEEP_OPTIONS[checkin.sleep_score - 1]?.label}</span>
                 </span>
                 {checkin.trigger_note && <span className="truncate text-sm text-muted">{checkin.trigger_note}</span>}
               </div>
