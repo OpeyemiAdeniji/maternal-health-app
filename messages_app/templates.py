@@ -28,13 +28,38 @@ MESSAGE_TEMPLATES = {
         "It's lovely to hear you're having a good day. Enjoy it!",
         "So glad today feels good. Keep doing what's working for you.",
     ],
-    'daily_affirmation': [
-        "You are doing better than you think. One day at a time.",
-        "Whatever today brings, you are enough for it.",
-        "Small steps still count. Be proud of how far you've come.",
-        "You are allowed to rest, to ask for help, and to be gentle with yourself today.",
-        "Being a mum is hard. You're doing it, and that matters.",
-    ],
+    # keyed by motherhood_stage — see messages_app/selector.py::get_daily_affirmation_message
+    # for how 'seasoned' and 'exploring' fall back when there's nothing stage-specific to say
+    'daily_affirmation': {
+        'pregnant': [
+            "Your body is doing something incredible. One day at a time.",
+            "You are capable of getting through this pregnancy, one day at a time.",
+            "It's okay to rest — growing a baby is already hard work.",
+            "Whatever this pregnancy looks like for you, you are doing it well.",
+            "You are already a wonderful parent, and your baby is lucky to have you.",
+        ],
+        'postpartum': [
+            "You are doing better than you think. One day at a time.",
+            "Being a mum is hard. You're doing it, and that matters.",
+            "You are allowed to rest, to ask for help, and to be gentle with yourself today.",
+            "Every small thing you do for your baby today counts, even the ones that feel invisible.",
+            "You are learning as you go, and that is exactly how it's supposed to be.",
+        ],
+        'seasoned': [
+            "Your experience matters — trust what you've learned along the way.",
+            "It's okay to still have hard days, even as an experienced mum.",
+            "You've grown so much through this journey, and that growth continues.",
+            "Taking care of yourself is still just as important as it always was.",
+            "You are allowed to ask for support, no matter how many times you've done this before.",
+        ],
+        'exploring': [
+            "You are doing better than you think. One day at a time.",
+            "Whatever today brings, you are enough for it.",
+            "Small steps still count. Be proud of how far you've come.",
+            "You are allowed to rest, to ask for help, and to be gentle with yourself today.",
+            "Wherever you are on this journey, you deserve support and care.",
+        ],
+    },
     'love_bombing': [
         "You have gotten through every hard day so far. That is not nothing, that is everything.",
         "I know today feels heavy, but you are still here, still trying, still you. That takes real strength.",
