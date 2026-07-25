@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from 'react';
-import api, { ACCESS_TOKEN_KEY } from '../services/api';
+import api, { ACCESS_TOKEN_KEY, setSessionExpiredHandler } from '../services/api';
 import { requestNotificationPermission } from '../utils/notifications';
 
 const REFRESH_TOKEN_KEY = 'modacare_refresh_token';
@@ -15,6 +15,7 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(
     () => !!localStorage.getItem(ACCESS_TOKEN_KEY)
   );
+  const [sessionExpiredMessage, setSessionExpiredMessage] = useState('');
 
   const login = async (email, password) => {
     const { data } = await api.post('/api/auth/login/', { email, password });
@@ -66,8 +67,32 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('storage', syncFromStorage);
   }, []);
 
+  // an expired/invalid token makes any authenticated request 401 — this is what
+  // actually logs the user out and surfaces a clear reason, instead of the request
+  // just silently failing on whatever page they happened to be on
+  useEffect(() => {
+    setSessionExpiredHandler(() => {
+      logout();
+      setSessionExpiredMessage('Your session has expired. Please log in again.');
+    });
+    return () => setSessionExpiredHandler(null);
+  }, []);
+
+  const clearSessionExpiredMessage = () => setSessionExpiredMessage('');
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        login,
+        register,
+        logout,
+        updateUser,
+        sessionExpiredMessage,
+        clearSessionExpiredMessage,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,5 @@
 import { Lock, Sms } from 'iconsax-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import AuthButton from './components/AuthButton';
@@ -7,11 +7,20 @@ import AuthInput from './components/AuthInput';
 import SocialButtons from './components/SocialButtons';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, sessionExpiredMessage, clearSessionExpiredMessage } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  // surfaces the reason if we were just bounced here by an expired session,
+  // then clears it so it doesn't reappear on a later, unrelated visit
+  useEffect(() => {
+    if (sessionExpiredMessage) {
+      setError(sessionExpiredMessage);
+      clearSessionExpiredMessage();
+    }
+  }, [sessionExpiredMessage, clearSessionExpiredMessage]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -22,8 +31,15 @@ export default function Login() {
     try {
       await login(form.email, form.password);
       navigate('/dashboard');
-    } catch {
-      setError('Invalid email or password.');
+    } catch (err) {
+      // err.response only exists if the server actually responded — no response at
+      // all means the request never got there (offline, server down, timed out),
+      // which isn't the same problem as a genuinely wrong email/password
+      if (err.response) {
+        setError('Invalid email or password.');
+      } else {
+        setError("We couldn't reach the server. Please check your connection and try again.");
+      }
     } finally {
       setSubmitting(false);
     }

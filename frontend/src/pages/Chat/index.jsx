@@ -23,34 +23,47 @@ function ModaAvatar() {
   );
 }
 
-function MessageBubble({ message, isSpeaking, onSpeak, speechSupported }) {
+function MessageBubble({ message, isSpeaking, onSpeak, speechSupported, onRetry }) {
   const isUser = message.role === 'user';
   return (
-    <div className={`flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
-      {!isUser && <ModaAvatar />}
-      <div
-        className={`flex max-w-[75%] items-start gap-2 rounded-card px-4 py-2.5 text-sm shadow-soft ${
-          isUser ? 'bg-primary-600 text-white' : 'border border-primary-200 bg-white text-ink'
-        }`}
-      >
-        <p className="whitespace-pre-wrap">{message.content}</p>
-        {!isUser && speechSupported && (
-          <button
-            type="button"
-            onClick={() => onSpeak(message.id, message.content)}
-            aria-label={isSpeaking ? 'Stop reading aloud' : 'Read message aloud'}
-            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center transition-colors ${
-              isSpeaking ? 'text-primary-600' : 'text-gray-400 hover:text-primary-500'
-            }`}
-          >
-            {isSpeaking ? (
-              <SpeakerFilledIcon className="h-4 w-4" />
-            ) : (
-              <VolumeHigh variant="Linear" color="currentColor" className="h-4 w-4" />
-            )}
-          </button>
-        )}
+    <div className={`flex flex-col gap-1 ${isUser ? 'items-end' : 'items-start'}`}>
+      <div className={`flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}>
+        {!isUser && <ModaAvatar />}
+        <div
+          className={`flex max-w-[75%] items-start gap-2 rounded-card px-4 py-2.5 text-sm shadow-soft ${
+            isUser
+              ? `bg-primary-600 text-white ${message.failed ? 'opacity-60' : ''}`
+              : 'border border-primary-200 bg-white text-ink'
+          }`}
+        >
+          <p className="whitespace-pre-wrap">{message.content}</p>
+          {!isUser && speechSupported && (
+            <button
+              type="button"
+              onClick={() => onSpeak(message.id, message.content)}
+              aria-label={isSpeaking ? 'Stop reading aloud' : 'Read message aloud'}
+              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center transition-colors ${
+                isSpeaking ? 'text-primary-600' : 'text-gray-400 hover:text-primary-500'
+              }`}
+            >
+              {isSpeaking ? (
+                <SpeakerFilledIcon className="h-4 w-4" />
+              ) : (
+                <VolumeHigh variant="Linear" color="currentColor" className="h-4 w-4" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
+      {message.failed && (
+        <button
+          type="button"
+          onClick={() => onRetry(message)}
+          className="flex items-center gap-1 text-xs font-medium text-red-500"
+        >
+          Couldn't send — tap to retry
+        </button>
+      )}
     </div>
   );
 }
@@ -107,24 +120,37 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, sending]);
 
-  const handleSend = async (e) => {
+  // shared by the initial send and a retry — keyed by localId so a retry updates
+  // the same bubble in place instead of adding a duplicate
+  const sendMessage = async (content, localId) => {
+    setError('');
+    setSending(true);
+    try {
+      const { data } = await api.post('/api/chat/', { content });
+      setMessages((prev) => [...prev.map((m) => (m.id === localId ? { ...m, failed: false } : m)), data]);
+    } catch (err) {
+      setError(extractErrorMessage(err));
+      setMessages((prev) => prev.map((m) => (m.id === localId ? { ...m, failed: true } : m)));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleSend = (e) => {
     e.preventDefault();
     const content = input.trim();
     if (!content || sending) return;
 
-    setError('');
+    const localId = `local-${Date.now()}`;
     setInput('');
-    setMessages((prev) => [...prev, { id: `local-${prev.length}`, role: 'user', content }]);
-    setSending(true);
+    setMessages((prev) => [...prev, { id: localId, role: 'user', content, failed: false }]);
+    sendMessage(content, localId);
+  };
 
-    try {
-      const { data } = await api.post('/api/chat/', { content });
-      setMessages((prev) => [...prev, data]);
-    } catch (err) {
-      setError(extractErrorMessage(err));
-    } finally {
-      setSending(false);
-    }
+  const handleRetry = (message) => {
+    if (sending) return;
+    setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, failed: false } : m)));
+    sendMessage(message.content, message.id);
   };
 
   return (
@@ -150,6 +176,7 @@ export default function Chat() {
             isSpeaking={speakingId === message.id}
             onSpeak={speak}
             speechSupported={speechSupported}
+            onRetry={handleRetry}
           />
         ))}
 
