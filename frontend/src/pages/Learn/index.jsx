@@ -1,4 +1,4 @@
-import { ArrowRight2 } from 'iconsax-react';
+import { ArrowLeft2, ArrowRight2 } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
@@ -28,6 +28,14 @@ export default function Learn() {
   return (
     <div className="flex flex-1 flex-col gap-6 bg-white px-6 py-8">
       <div>
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="mb-3 flex items-center gap-1 text-sm font-medium text-primary-600"
+        >
+          <ArrowLeft2 variant="Linear" color="currentColor" className="h-4 w-4" />
+          Back
+        </button>
         <h1 className="text-2xl font-semibold text-ink">Learn</h1>
         <p className="mt-1 text-sm text-muted">Articles picked for where you are right now.</p>
       </div>
