@@ -46,7 +46,7 @@ export default function MotherhoodStage() {
     setError('');
     setSubmitting(true);
     try {
-      await api.put('/api/auth/profile/', { motherhood_stage: stage.id });
+      await api.patch('/api/auth/profile/', { motherhood_stage: stage.id });
       navigate(stage.route);
     } catch {
       setError("We couldn't save your stage. Please try again.");

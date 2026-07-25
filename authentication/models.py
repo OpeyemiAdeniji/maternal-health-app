@@ -56,6 +56,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=MotherhoodStage.POSTPARTUM,
         blank=True,
     )
+    # set once the user finishes the full onboarding flow (stage questions + Safety Net) —
+    # gates access to the Dashboard and other protected screens until then
+    onboarding_complete = models.BooleanField(default=False)
     # onboarding follow-up details — only some apply, depending on motherhood_stage
     pregnancy_week = models.IntegerField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
@@ -67,6 +70,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     notifications_enabled = models.BooleanField(default=True)
     # last time the user dismissed the post-registration EPDS nudge — null until dismissed once
     epds_prompt_dismissed_at = models.DateTimeField(null=True, blank=True)
+    # last time the user actually opened the Learn page — null until their first visit
+    last_visited_learn_at = models.DateTimeField(null=True, blank=True)
+    # separate from last_visited_learn_at: tracks the one-time Learn coach-mark, not page visits
+    learn_coachmark_dismissed = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
