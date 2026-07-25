@@ -172,6 +172,7 @@ export default function Profile() {
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [profileError, setProfileError] = useState('');
 
   const [accountForm, setAccountForm] = useState({ full_name: '', country: 'IRELAND', motherhood_stage: 'postpartum' });
   const [expandedAccountField, setExpandedAccountField] = useState(null);
@@ -190,7 +191,9 @@ export default function Profile() {
   const [notificationsSaved, setNotificationsSaved] = useState(false);
   const [notificationsError, setNotificationsError] = useState('');
 
-  useEffect(() => {
+  const loadProfile = () => {
+    setLoading(true);
+    setProfileError('');
     api
       .get('/api/auth/profile/')
       .then(({ data }) => {
@@ -202,7 +205,12 @@ export default function Profile() {
         });
         setNotificationsEnabled(data.notifications_enabled ?? true);
       })
+      .catch(() => setProfileError("We couldn't load your profile. Please try again."))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadProfile();
 
     api
       .get('/api/contacts/')
@@ -335,6 +343,17 @@ export default function Profile() {
     return (
       <div className="flex flex-1 items-center justify-center bg-[#F5F5F5] px-6 py-8">
         <p className="text-sm text-muted">Loading…</p>
+      </div>
+    );
+  }
+
+  if (profileError) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-[#F5F5F5] px-6 py-8 text-center">
+        <p className="text-sm text-muted">{profileError}</p>
+        <button type="button" onClick={loadProfile} className="text-sm font-semibold text-brand">
+          Try again
+        </button>
       </div>
     );
   }
