@@ -25,6 +25,10 @@ function formatCheckinDate(dateKey) {
   return new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+function formatCheckinTime(createdAt) {
+  return new Date(createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
 function extractErrorMessage(err) {
   const data = err.response?.data;
   if (!data) return 'Something went wrong. Please try again.';
@@ -202,7 +206,10 @@ export default function CheckIn() {
           <div className="space-y-2">
             {history.map((checkin) => (
               <div key={checkin.id} className="flex items-center gap-3 rounded-card bg-white p-4 shadow-soft">
-                <span className="w-14 shrink-0 text-xs text-muted">{formatCheckinDate(checkin.date)}</span>
+                <span className="flex w-14 shrink-0 flex-col text-xs text-muted">
+                  <span>{formatCheckinDate(checkin.date)}</span>
+                  <span className="text-[10px] text-gray-400">{formatCheckinTime(checkin.created_at)}</span>
+                </span>
                 <span className="flex flex-col items-center">
                   <span className="text-xl">{MOOD_OPTIONS[checkin.mood_score - 1]?.emoji}</span>
                   <span className="text-[10px] text-muted">{MOOD_OPTIONS[checkin.mood_score - 1]?.label}</span>
