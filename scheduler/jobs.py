@@ -3,14 +3,16 @@ from datetime import timedelta
 
 from django.utils import timezone
 
-from authentication.models import User
+from authentication.models import HealthcareContact, User
 from authentication.safety_net_views import _current_streak
+from authentication.sms import PERSONAL_RELATIONSHIPS, send_love_bombing_contact_alert
 from checkins.models import CheckIn
 from messages_app.models import SupportiveMessage
 from messages_app.selector import (
     get_daily_affirmation_category,
     get_daily_affirmation_message,
     get_love_bombing_messages,
+    get_love_bombing_streak_start,
 )
 from notifications.email import send_weekly_summary_email
 from notifications.models import AppNotification
@@ -19,6 +21,10 @@ from support.models import DailyRoutine
 from support.routines import DAILY_ROUTINES
 
 from .scheduler import scheduler
+
+# how long an ongoing (never-reset) streak can go between contact alerts, so a very
+# long stretch still checks back in periodically instead of alerting only once ever
+LOVE_BOMBING_CONTACT_ALERT_COOLDOWN_DAYS = 7
 
 
 def send_daily_affirmations():
@@ -57,6 +63,38 @@ def send_daily_routines():
             )
 
 
+def _notify_personal_contacts_if_due(user, now):
+    # only Partner/Friend/Family — GP/Midwife are clinical contacts and never get this
+    streak_start = get_love_bombing_streak_start(user)
+    if streak_start is None:
+        return
+
+    last_alert = user.last_love_bombing_contact_alert_at
+    if last_alert is not None:
+        last_alert_local = timezone.localtime(last_alert)
+        is_same_streak = streak_start <= last_alert_local.date()
+        cooldown_elapsed = (now - last_alert) >= timedelta(days=LOVE_BOMBING_CONTACT_ALERT_COOLDOWN_DAYS)
+        if is_same_streak and not cooldown_elapsed:
+            return  # already alerted contacts for this exact streak, no cooldown reset yet
+
+    personal_contacts = HealthcareContact.objects.filter(
+        user=user, relationship_type__in=PERSONAL_RELATIONSHIPS
+    )
+    if not personal_contacts.exists():
+        return  # nothing to do — the user still gets their own push notification above
+
+    for contact in personal_contacts:
+        send_love_bombing_contact_alert(
+            contact_name=contact.name,
+            phone_number=contact.phone,
+            token=contact.unique_token,
+            user_name=user.full_name,
+        )
+
+    user.last_love_bombing_contact_alert_at = now
+    user.save(update_fields=['last_love_bombing_contact_alert_at'])
+
+
 def send_love_bombing_check():
     users = User.objects.filter(is_active=True, notifications_enabled=True).exclude(fcm_token='')
     for user in users:
@@ -77,6 +115,8 @@ def send_love_bombing_check():
                 id=f'love_bombing_{user.id}_{now.timestamp()}_{offset_hours}',
                 misfire_grace_time=3600,
             )
+
+        _notify_personal_contacts_if_due(user, now)
 
 
 def _week_bounds(reference_date):

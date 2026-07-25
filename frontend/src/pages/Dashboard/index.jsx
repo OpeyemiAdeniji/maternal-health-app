@@ -1,13 +1,44 @@
 import { ArrowRight2, Book1, Cloud, Heart, MessageText1 } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import GuidedTour from '../../components/common/GuidedTour';
 import useAuth from '../../hooks/useAuth';
 import useEpdsPrompt from '../../hooks/useEpdsPrompt';
+import useTour from '../../hooks/useTour';
 import api from '../../services/api';
 import { toDateKey } from '../../utils/date';
 
 const MOOD_EMOJI = ['😔', '😕', '😐', '🙂', '😊'];
 const MOOD_LABELS = ['Struggling', 'Low', 'Neutral', 'Content', 'Great'];
+
+// shown once to exploring-stage users on their first Dashboard visit
+const EXPLORING_TOUR_STEPS = [
+  {
+    key: 'chat',
+    title: 'Chat',
+    description: "Talk to Moda, your companion, any time you need someone to listen — she's here whenever you need her.",
+  },
+  {
+    key: 'journal',
+    title: 'Journal',
+    description: 'Write down whatever is on your mind in a private space just for you.',
+  },
+  {
+    key: 'learn',
+    title: 'Learn',
+    description: 'Explore articles picked for where you are right now.',
+  },
+  {
+    key: 'support',
+    title: 'Support',
+    description: 'Find helplines and the people you can lean on, all in one place.',
+  },
+  {
+    key: 'insights',
+    title: 'Insights',
+    description: 'See your mood, sleep, and wellbeing trends over time.',
+  },
+];
 
 function greetingWord() {
   const hour = new Date().getHours();
@@ -178,6 +209,7 @@ function LoveNoteModal({ note, onClose }) {
 export default function Dashboard() {
   const { user, updateUser } = useAuth();
   const { setIsEpdsPromptOpen } = useEpdsPrompt();
+  const { setIsTourActive } = useTour();
   const navigate = useNavigate();
   const [checkins, setCheckins] = useState([]);
   const [checkInLoaded, setCheckInLoaded] = useState(false);
@@ -190,6 +222,7 @@ export default function Dashboard() {
   const [epdsPromptDismissedAt, setEpdsPromptDismissedAt] = useState(null);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [showEpdsPrompt, setShowEpdsPrompt] = useState(false);
+  const [tourActive, setTourActive] = useState(false);
 
   useEffect(() => {
     api
@@ -226,15 +259,19 @@ export default function Dashboard() {
         // login only ever returns a minimal user — sync the full profile back into
         // AuthContext so stageBadgeLabel() (and anything else reading `user`) is current
         updateUser(data);
+        if (data.motherhood_stage === 'exploring' && !data.exploring_tour_completed) {
+          setTourActive(true);
+        }
       })
       .catch(() => setEpdsPromptDismissedAt(null))
       .finally(() => setProfileLoaded(true));
   }, []);
 
   // post-registration nudge: only for users who've never completed an assessment,
-  // shown a few seconds after the dashboard loads, at most once a day
+  // shown a few seconds after the dashboard loads, at most once a day — held off entirely
+  // while the guided tour is active so a brand-new exploring user isn't shown both at once
   useEffect(() => {
-    if (!epdsResultsLoaded || !profileLoaded || epdsLastResult) return;
+    if (!epdsResultsLoaded || !profileLoaded || epdsLastResult || tourActive) return;
 
     const oneDayMs = 24 * 60 * 60 * 1000;
     const dismissedRecently =
@@ -243,13 +280,24 @@ export default function Dashboard() {
 
     const timer = setTimeout(() => setShowEpdsPrompt(true), 2500);
     return () => clearTimeout(timer);
-  }, [epdsResultsLoaded, profileLoaded, epdsLastResult, epdsPromptDismissedAt]);
+  }, [epdsResultsLoaded, profileLoaded, epdsLastResult, epdsPromptDismissedAt, tourActive]);
 
   // let Header/Sidebar know this modal is open so they can suppress the Learn
   // coach-mark for as long as it's up, without permanently marking it seen
   useEffect(() => {
     setIsEpdsPromptOpen(showEpdsPrompt);
   }, [showEpdsPrompt, setIsEpdsPromptOpen]);
+
+  // same idea for the guided tour — it and the Learn coach-mark can both become
+  // eligible on a brand-new exploring user's very first Dashboard visit
+  useEffect(() => {
+    setIsTourActive(tourActive);
+  }, [tourActive, setIsTourActive]);
+
+  const handleTourFinish = () => {
+    setTourActive(false);
+    api.patch('/api/auth/profile/', { exploring_tour_completed: true }).catch(() => {});
+  };
 
   const handleDismissLoveNote = () => {
     if (!loveNote) return;
@@ -317,7 +365,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      <div className="rounded-[24px] bg-white px-3 py-5 shadow-soft">
+      <div className="rounded-[24px] bg-white px-3 py-5 shadow-soft" data-tour-target="chat">
         <div className="flex items-center justify-between">
           <CardEyebrowIcon
             icon={<MessageText1 variant="Linear" color="currentColor" className="h-4 w-4" />}
@@ -439,6 +487,8 @@ export default function Dashboard() {
       {showEpdsPrompt && (
         <EpdsPromptModal onTakeAssessment={handleTakeAssessmentFromPrompt} onDismiss={handleDismissEpdsPrompt} />
       )}
+
+      {tourActive && <GuidedTour steps={EXPLORING_TOUR_STEPS} onFinish={handleTourFinish} />}
 
       {loveBombing.isTriggered && (
         <div className="rounded-card bg-white p-6 shadow-soft">

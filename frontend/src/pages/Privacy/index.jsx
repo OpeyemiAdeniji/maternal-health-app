@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 
 const SECTIONS = [
   {
+    title: 'What Modacare is',
+    body: 'Modacare is a student capstone project, built for the Higher Diploma in Computing (Software Development) at National College of Ireland. It is not a certified medical product, and it has not been reviewed or approved by any medical or regulatory body. Using it does not create a clinical relationship with anyone.',
+  },
+  {
     title: 'What we collect',
     body: "We collect the information you choose to share with Modacare — your mood scores, sleep scores, journal entries, EPDS screening results, healthcare contact details, and your device's push notification token.",
   },
@@ -12,15 +16,19 @@ const SECTIONS = [
   },
   {
     title: 'Who can see it',
-    body: 'Only you can see your data. We never share, sell, or otherwise disclose it to third parties.',
+    body: 'Only you can see your data. We never share, sell, or otherwise disclose it to third parties. A Safety Net contact you choose to add can see a limited, deliberately gentle summary via their own private link — never your full data.',
   },
   {
     title: 'Your rights',
-    body: 'You can request deletion of your account and all associated data at any time by contacting us.',
+    body: 'You can request access to a copy of your data, or its deletion, at any time by contacting us.',
   },
   {
-    title: 'Safe messaging',
-    body: 'Modacare is a support tool, not a clinical service. It does not diagnose or treat any condition — always speak to a healthcare professional about medical concerns.',
+    title: 'Acceptable use',
+    body: "By creating an account, you agree to use Modacare respectfully, keep your login details secure, and use it for your own personal wellbeing tracking — please don't use it to store information about someone else without their consent.",
+  },
+  {
+    title: 'Not a substitute for medical care',
+    body: "Modacare is a support tool, not a clinical service — it does not diagnose or treat any condition, and it's provided as-is, as an academic project, without any guarantee of accuracy or availability. Always speak to a healthcare professional about medical concerns. If you're ever in crisis or concerned about your safety, please contact emergency services, your GP or midwife, or a helpline immediately — don't rely on this app.",
   },
 ];
 
@@ -28,7 +36,7 @@ export default function Privacy() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-1 flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-white">
       <div className="border-b border-gray-100 px-4 py-5">
         <button
           type="button"
@@ -38,7 +46,7 @@ export default function Privacy() {
           <ArrowLeft2 variant="Linear" color="currentColor" className="h-4 w-4" />
           Back
         </button>
-        <h1 className="text-2xl font-bold text-ink">Privacy Policy</h1>
+        <h1 className="text-2xl font-bold text-ink">Terms &amp; Conditions and Privacy Policy</h1>
         <p className="mt-1 text-xs text-muted">Last updated July 2026</p>
       </div>
 

@@ -41,6 +41,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         SEASONED = 'seasoned', 'Seasoned mother'
         EXPLORING = 'exploring', 'Just exploring'
 
+    class MaritalStatus(models.TextChoices):
+        SINGLE = 'single', 'Single'
+        MARRIED_PARTNERED = 'married_partnered', 'Married / Partnered'
+        DIVORCED_SEPARATED = 'divorced_separated', 'Divorced / Separated'
+        WIDOWED = 'widowed', 'Widowed'
+        PREFER_NOT_TO_SAY = 'prefer_not_to_say', 'Prefer not to say'
+
+    class EmploymentStatus(models.TextChoices):
+        FULL_TIME = 'full_time', 'Working full-time'
+        PART_TIME = 'part_time', 'Working part-time'
+        STAY_AT_HOME = 'stay_at_home', 'Stay-at-home parent'
+        STUDYING = 'studying', 'Studying'
+        NOT_WORKING = 'not_working', 'Not currently working'
+        PREFER_NOT_TO_SAY = 'prefer_not_to_say', 'Prefer not to say'
+
     # swapped username for email as the login field
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
@@ -65,6 +80,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     baby_age_months = models.IntegerField(null=True, blank=True)
     feeding_method = models.CharField(max_length=100, blank=True, default='')
     stage_reason = models.CharField(max_length=200, blank=True, default='')
+    # seasoned-mother-specific follow-up details — all optional, same as the other stages'
+    marital_status = models.CharField(max_length=20, choices=MaritalStatus.choices, blank=True, default='')
+    number_of_children = models.PositiveIntegerField(null=True, blank=True)
+    employment_status = models.CharField(max_length=20, choices=EmploymentStatus.choices, blank=True, default='')
     # device push token for FCM — blank until the user grants notification permission
     fcm_token = models.TextField(blank=True, default='')
     notifications_enabled = models.BooleanField(default=True)
@@ -74,6 +93,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_visited_learn_at = models.DateTimeField(null=True, blank=True)
     # separate from last_visited_learn_at: tracks the one-time Learn coach-mark, not page visits
     learn_coachmark_dismissed = models.BooleanField(default=False)
+    # de-dup guard for the love-bombing personal-contact SMS — null until the first alert is
+    # ever sent; prevents re-sending every day a low-mood streak continues
+    last_love_bombing_contact_alert_at = models.DateTimeField(null=True, blank=True)
+    # tracks the one-time guided tour shown to exploring-stage users on their first Dashboard visit
+    exploring_tour_completed = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

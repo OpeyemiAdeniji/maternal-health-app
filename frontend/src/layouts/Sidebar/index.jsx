@@ -9,9 +9,9 @@ import api from '../../services/api';
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Home', Icon: Home2 },
-  { to: '/journal', label: 'Journal', Icon: Book1 },
-  { to: '/support', label: 'Support', Icon: Heart },
-  { to: '/insights', label: 'Insight', Icon: Chart },
+  { to: '/journal', label: 'Journal', Icon: Book1, tourKey: 'journal' },
+  { to: '/support', label: 'Support', Icon: Heart, tourKey: 'support' },
+  { to: '/insights', label: 'Insight', Icon: Chart, tourKey: 'insights' },
   { to: '/profile', label: 'You', Icon: Profile2User },
 ];
 
@@ -53,6 +53,7 @@ export default function Sidebar({ userName }) {
               type="button"
               onClick={() => navigate('/learn')}
               aria-label="Learn"
+              data-tour-target="learn"
               className="relative z-50 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-600 transition-colors hover:bg-primary-200"
             >
               <Book variant="Linear" color="currentColor" className="h-4 w-4" />
@@ -80,10 +81,11 @@ export default function Sidebar({ userName }) {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 px-3">
-        {NAV_ITEMS.map(({ to, label, Icon }) => (
+        {NAV_ITEMS.map(({ to, label, Icon, tourKey }) => (
           <NavLink
             key={to}
             to={to}
+            data-tour-target={tourKey}
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-pill px-4 py-2.5 text-sm font-medium transition-colors ${
                 isActive ? 'bg-primary-600 text-white' : 'text-muted hover:bg-primary-50'

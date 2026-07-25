@@ -71,7 +71,7 @@ def get_daily_affirmation_message(user):
     return random.choice(stage_pool[stage])
 
 
-def get_love_bombing_messages(user):
+def _consecutive_low_mood_run(user):
     # one representative score per day (the most recent check-in of that day). Without this, a
     # duplicate check-in on the same day breaks the consecutive-day walk below (its date no longer
     # matches the already-decremented expected_date), silently zeroing out a real streak.
@@ -87,14 +87,30 @@ def get_love_bombing_messages(user):
     # count how many of the most recent days are low mood with no gaps in between
     consecutive_low = 0
     expected_date = None
+    streak_start_date = None
     for date in recent_dates:
         if expected_date is not None and date != expected_date:
             break
         if daily_mood[date] > 2:
             break
         consecutive_low += 1
+        streak_start_date = date
         expected_date = date - timedelta(days=1)
 
+    return consecutive_low, streak_start_date
+
+
+def get_love_bombing_messages(user):
+    consecutive_low, _ = _consecutive_low_mood_run(user)
     if consecutive_low >= LOVE_BOMBING_MIN_CONSECUTIVE_DAYS:
         return random.sample(MESSAGE_TEMPLATES['love_bombing'], 3)
+    return None
+
+
+def get_love_bombing_streak_start(user):
+    # start date of the current qualifying low-mood streak, or None if not triggered —
+    # lets a caller tell a fresh streak apart from one it already alerted on
+    consecutive_low, streak_start_date = _consecutive_low_mood_run(user)
+    if consecutive_low >= LOVE_BOMBING_MIN_CONSECUTIVE_DAYS:
+        return streak_start_date
     return None

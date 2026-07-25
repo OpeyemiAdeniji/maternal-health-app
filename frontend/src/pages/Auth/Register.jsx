@@ -122,18 +122,29 @@ export default function Register() {
             error={fieldErrors.confirmPassword}
           />
 
-          <label className="flex items-center gap-2 text-sm text-text-primary">
+          <div className="flex items-center gap-2 text-sm text-text-primary">
             <input
+              id="agree-terms"
               type="checkbox"
               checked={agreed}
               onChange={(e) => {
                 setAgreed(e.target.checked);
                 setError('');
               }}
-              className="h-4 w-4 rounded border-gray-300 accent-brand"
+              className="h-4 w-4 shrink-0 rounded border-gray-300 accent-brand"
             />
-            I Agree With Terms of Service
-          </label>
+            <label htmlFor="agree-terms">
+              I agree with the{' '}
+              <Link
+                to="/privacy"
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-brand underline"
+              >
+                Terms &amp; Conditions and Privacy Policy
+              </Link>
+            </label>
+          </div>
 
           {error && <p className="text-sm text-red-500">{error}</p>}
 

@@ -44,6 +44,9 @@ function App() {
           {/* public — reachable whether or not the user is logged in */}
           <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword />} />
           <Route path={ROUTES.RESET_PASSWORD} element={<ResetPassword />} />
+          {/* public so a prospective user can read it from the Register screen before
+              creating an account — was previously stuck behind login + onboarding */}
+          <Route path={ROUTES.PRIVACY} element={<Privacy />} />
 
           <Route element={<ProtectedRoute />}>
             <Route path={ROUTES.WELCOME} element={<Welcome />} />
@@ -78,7 +81,6 @@ function App() {
                 <Route path={ROUTES.MOOD_HISTORY} element={<MoodHistory />} />
                 <Route path={ROUTES.NOTIFICATIONS} element={<Notifications />} />
                 <Route path={ROUTES.PROFILE} element={<Profile />} />
-                <Route path={ROUTES.PRIVACY} element={<Privacy />} />
                 <Route path={ROUTES.ABOUT} element={<About />} />
               </Route>
             </Route>
