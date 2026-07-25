@@ -70,3 +70,48 @@ SUPPORT_RESOURCES = {
         },
     ],
 }
+
+# reading tailored to the user's motherhood stage — every URL below was checked
+# and confirmed live before this was added; verify again before going live
+STAGE_RESOURCES = {
+    'pregnant': [
+        {
+            'title': 'How to Make a Birth Plan',
+            'url': 'https://www.nhs.uk/pregnancy/labour-and-birth/preparing-for-the-birth/how-to-make-a-birth-plan/',
+        },
+        {
+            'title': 'The Stages of Labour and Birth',
+            'url': 'https://www.nhs.uk/pregnancy/labour-and-birth/the-stages-of-labour-and-birth/',
+        },
+    ],
+    'postpartum': [
+        {
+            'title': 'Baby Blues vs. Postnatal Depression',
+            'url': 'https://www.nhs.uk/mental-health/conditions/postnatal-depression/',
+        },
+        {
+            'title': 'Skin-to-Skin Contact With Your Newborn',
+            'url': 'https://www.nhs.uk/best-start-in-life/baby/baby-basics/caring-for-your-baby/skin-to-skin-contact-with-your-newborn/',
+        },
+    ],
+    'seasoned': [
+        {
+            'title': 'Top Tips to Improve Your Mental Wellbeing',
+            'url': 'https://www.nhs.uk/every-mind-matters/mental-wellbeing-tips/top-tips-to-improve-your-mental-wellbeing/',
+        },
+        {
+            'title': 'Minding Your Wellbeing Programme',
+            'url': 'https://www2.hse.ie/mental-health/self-help/tools/minding-your-wellbeing-programme/',
+        },
+    ],
+    'exploring': [
+        {
+            'title': 'Advice for Partners During Pregnancy',
+            'url': 'https://www.nhs.uk/best-start-in-life/pregnancy/advice-for-partners/',
+        },
+        {
+            'title': 'Every Mind Matters',
+            'url': 'https://www.nhs.uk/every-mind-matters/',
+        },
+    ],
+}

@@ -1,4 +1,4 @@
-import { Call } from 'iconsax-react';
+import { ArrowRight2, Call, Headphone, Hospital, Profile2User, Teacher } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
@@ -13,13 +13,6 @@ const RELATIONSHIP_LABELS = {
 
 const PERSONAL_TYPES = ['partner', 'friend', 'family'];
 const PROFESSIONAL_TYPES = ['gp', 'midwife'];
-
-function accentFor(name) {
-  if (name.includes('HSE')) return 'border-l-blue-400';
-  if (name.includes('Nurture')) return 'border-l-green-400';
-  if (name.includes('Samaritans')) return 'border-l-orange-400';
-  return 'border-l-primary-400';
-}
 
 function ContactCard({ contact }) {
   return (
@@ -41,13 +34,19 @@ function ContactCard({ contact }) {
   );
 }
 
-function SectionHeading({ children }) {
-  return <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{children}</h2>;
+function CardEyebrowIcon({ icon, label, colorClass }) {
+  return (
+    <h2 className={`mb-2 flex items-center gap-1 text-[13px] font-medium ${colorClass}`}>
+      {icon}
+      <span>{label}</span>
+    </h2>
+  );
 }
 
 export default function Support() {
   const [contacts, setContacts] = useState([]);
   const [resources, setResources] = useState([]);
+  const [stageResources, setStageResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -59,7 +58,10 @@ export default function Support() {
 
     api
       .get('/api/support/')
-      .then(({ data }) => setResources(data.resources || []))
+      .then(({ data }) => {
+        setResources(data.resources || []);
+        setStageResources(data.stage_resources || []);
+      })
       .catch(() => setError("We couldn't load your support resources. Please try again later."))
       .finally(() => setLoading(false));
   }, []);
@@ -82,7 +84,11 @@ export default function Support() {
       {!loading && !error && (
         <>
           <section>
-            <SectionHeading>Your Personal Support</SectionHeading>
+            <CardEyebrowIcon
+              icon={<Profile2User variant="Linear" color="currentColor" className="h-4 w-4" />}
+              label="YOUR PERSONAL SUPPORT"
+              colorClass="text-[#0187e6]"
+            />
             {personalContacts.length > 0 ? (
               <div className="space-y-3">
                 {personalContacts.map((contact) => (
@@ -101,7 +107,11 @@ export default function Support() {
           </section>
 
           <section>
-            <SectionHeading>Professional Support</SectionHeading>
+            <CardEyebrowIcon
+              icon={<Hospital variant="Linear" color="currentColor" className="h-4 w-4" />}
+              label="PROFESSIONAL SUPPORT"
+              colorClass="text-[#28a668]"
+            />
             {professionalContacts.length > 0 ? (
               <div className="space-y-3">
                 {professionalContacts.map((contact) => (
@@ -114,12 +124,16 @@ export default function Support() {
           </section>
 
           <section>
-            <SectionHeading>Helplines</SectionHeading>
+            <CardEyebrowIcon
+              icon={<Headphone variant="Linear" color="currentColor" className="h-4 w-4" />}
+              label="HELPLINES"
+              colorClass="text-[#f48b41]"
+            />
             <div className="space-y-4">
               {resources.map((resource) => (
                 <div
                   key={resource.name}
-                  className={`rounded-card border-l-4 bg-white p-5 shadow-soft ${accentFor(resource.name)}`}
+                  className="rounded-card border-l-4 border-l-primary-600 bg-white p-5 shadow-soft"
                 >
                   <h3 className="text-lg font-semibold text-ink">{resource.name}</h3>
                   <p className="mt-1 text-sm text-muted">{resource.description}</p>
@@ -136,6 +150,24 @@ export default function Support() {
               ))}
             </div>
           </section>
+
+          {stageResources.length > 0 && (
+            <div className="rounded-card bg-white p-5 shadow-soft">
+              <CardEyebrowIcon
+                icon={<Teacher variant="Linear" color="currentColor" className="h-4 w-4" />}
+                label="LEARN"
+                colorClass="text-[#8c5cf5]"
+              />
+              <p className="text-sm text-ink">Explore articles for your stage.</p>
+              <Link
+                to="/learn"
+                className="mt-2 flex items-center gap-1 text-[13px] font-medium text-primary-600"
+              >
+                See more in Learn
+                <ArrowRight2 variant="Linear" color="currentColor" className="h-2.5 w-2.5" />
+              </Link>
+            </div>
+          )}
         </>
       )}
     </div>
