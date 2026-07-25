@@ -70,8 +70,11 @@ def _build_affirmation_prompt(user):
     else:
         lines.append("They haven't logged any check-ins this week.")
 
+    mood_labels = dict(JournalEntry.MOOD_CHOICES)
     recent_moods = [
-        entry.get_mood_tag_display() for entry in JournalEntry.objects.filter(user=user)[:2] if entry.mood_tag
+        ', '.join(mood_labels.get(tag, tag) for tag in entry.effective_mood_tags)
+        for entry in JournalEntry.objects.filter(user=user)[:2]
+        if entry.effective_mood_tags
     ]
     if recent_moods:
         lines.append(f"Their recent journal mood tags are: {', '.join(recent_moods)}.")

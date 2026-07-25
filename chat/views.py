@@ -61,8 +61,8 @@ def build_system_prompt(user):
 
     if journal_entries:
         journal_summary = ', '.join(
-            f"{e.mood_tag or 'untagged'} (sentiment {e.sentiment_score:.2f})"
-            if e.sentiment_score is not None else (e.mood_tag or 'untagged')
+            f"{', '.join(e.effective_mood_tags) or 'untagged'} (sentiment {e.sentiment_score:.2f})"
+            if e.sentiment_score is not None else (', '.join(e.effective_mood_tags) or 'untagged')
             for e in journal_entries
         )
     else:
