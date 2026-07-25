@@ -11,9 +11,7 @@ class CheckIn(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # one check-in per user per day, enforced at DB level
-        unique_together = ('user', 'date')
-        ordering = ['-date']
+        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.user.email} – {self.date}"

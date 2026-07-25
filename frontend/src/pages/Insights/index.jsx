@@ -18,8 +18,16 @@ function formatShortDate(dateKey) {
 
 function last30DaysCheckins(checkins) {
   const cutoff = toDateKey(new Date(Date.now() - 30 * 86400000));
-  return [...checkins]
-    .filter((c) => c.date >= cutoff)
+  // one representative entry per day (the most recent check-in of that day) — checkins arrive
+  // newest-first from the API, so the first occurrence per date is the one to keep. Otherwise a
+  // day with several check-ins would show as duplicate bars and skew the 30-day average below.
+  const mostRecentByDate = new Map();
+  for (const c of checkins) {
+    if (c.date >= cutoff && !mostRecentByDate.has(c.date)) {
+      mostRecentByDate.set(c.date, c);
+    }
+  }
+  return [...mostRecentByDate.values()]
     .sort((a, b) => (a.date < b.date ? -1 : 1))
     .map((c) => ({ date: formatShortDate(c.date), mood: c.mood_score, sleep: c.sleep_score }));
 }

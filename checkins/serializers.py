@@ -21,13 +21,6 @@ class CheckInSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Sleep score must be between 1 and 5.')
         return value
 
-    def validate(self, data):
-        user = self.context['request'].user
-        today = timezone.localdate()
-        if CheckIn.objects.filter(user=user, date=today).exists():
-            raise serializers.ValidationError("You've already submitted a check-in for today.")
-        return data
-
     def create(self, validated_data):
         # inject user and today's date — not coming from the request body
         validated_data['user'] = self.context['request'].user
