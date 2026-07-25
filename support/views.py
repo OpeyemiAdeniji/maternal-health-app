@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from authentication.models import HealthcareContact
 from authentication.serializers import HealthcareContactSerializer
 
-from .resources import SUPPORT_RESOURCES
+from .resources import STAGE_RESOURCES, SUPPORT_RESOURCES
 
 
 class SupportResourcesView(APIView):
@@ -18,4 +18,5 @@ class SupportResourcesView(APIView):
             data['personal_contact'] = HealthcareContactSerializer(contact).data
         country = request.user.country
         data['resources'] = SUPPORT_RESOURCES.get(country, SUPPORT_RESOURCES['IRELAND'])
+        data['stage_resources'] = STAGE_RESOURCES.get(request.user.motherhood_stage, [])
         return Response(data)

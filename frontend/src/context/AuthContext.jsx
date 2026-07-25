@@ -48,6 +48,17 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(false);
   };
 
+  // merges fresh fields (e.g. from a /api/auth/profile/ fetch) into the cached user
+  // object — login only ever returns a minimal user, so screens that need up-to-date
+  // fields (motherhood_stage, etc.) should pull them and sync them back here
+  const updateUser = (patch) => {
+    setUser((prev) => {
+      const next = { ...prev, ...patch };
+      localStorage.setItem(USER_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
   // keeps state in sync if the api layer clears the token on a 401 elsewhere
   useEffect(() => {
     const syncFromStorage = () => setIsAuthenticated(!!localStorage.getItem(ACCESS_TOKEN_KEY));
@@ -56,7 +67,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -45,6 +45,7 @@ class LoginView(APIView):
             'user': {
                 'email': data['user'].email,
                 'full_name': data['user'].full_name,
+                'motherhood_stage': data['user'].motherhood_stage,
             },
         })
 

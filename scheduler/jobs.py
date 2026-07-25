@@ -7,7 +7,11 @@ from authentication.models import User
 from authentication.safety_net_views import _current_streak
 from checkins.models import CheckIn
 from messages_app.models import SupportiveMessage
-from messages_app.selector import get_daily_affirmation_category, get_love_bombing_messages, get_message
+from messages_app.selector import (
+    get_daily_affirmation_category,
+    get_daily_affirmation_message,
+    get_love_bombing_messages,
+)
 from notifications.email import send_weekly_summary_email
 from notifications.models import AppNotification
 from notifications.tasks import send_push_notification
@@ -21,7 +25,7 @@ def send_daily_affirmations():
     users = User.objects.filter(is_active=True, notifications_enabled=True).exclude(fcm_token='')
     for user in users:
         category = get_daily_affirmation_category(user)
-        message = get_message(category)
+        message = get_daily_affirmation_message(user)
         SupportiveMessage.objects.create(user=user, message_text=message, category=category)
         send_push_notification(user, 'Your daily affirmation', message, AppNotification.NotificationType.AFFIRMATION)
 
@@ -83,10 +87,15 @@ def _week_bounds(reference_date):
 
 
 def _average_mood(user, start, end):
-    scores = list(CheckIn.objects.filter(user=user, date__gte=start, date__lte=end).values_list('mood_score', flat=True))
-    if not scores:
+    # one representative score per day (the most recent check-in of that day), not one per row,
+    # so a day with multiple check-ins doesn't get over-weighted in the average
+    checkins = CheckIn.objects.filter(user=user, date__gte=start, date__lte=end)
+    daily_mood = {}
+    for c in checkins:
+        daily_mood.setdefault(c.date, c.mood_score)
+    if not daily_mood:
         return None
-    return sum(scores) / len(scores)
+    return sum(daily_mood.values()) / len(daily_mood)
 
 
 def send_weekly_summary_emails():

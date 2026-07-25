@@ -31,8 +31,8 @@ export default function PregnantFollowUp() {
       const payload = {};
       if (weeksPregnant !== '') payload.pregnancy_week = parseInt(weeksPregnant, 10);
       if (dueDate) payload.due_date = dueDate;
-      await api.put('/api/auth/profile/', payload);
-      navigate('/dashboard');
+      await api.patch('/api/auth/profile/', payload);
+      navigate('/healthcare-contact');
     } catch {
       setError("We couldn't save your details. Please try again.");
     } finally {

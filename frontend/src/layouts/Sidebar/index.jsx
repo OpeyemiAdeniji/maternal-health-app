@@ -1,8 +1,10 @@
-import { Book1, Chart, Heart, Home2, Notification, Profile2User } from 'iconsax-react';
+import { Book, Book1, Chart, Heart, Home2, Notification, Profile2User } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import LearnCoachmark from '../../components/common/LearnCoachmark';
 import Logo from '../../components/common/Logo';
 import useAuth from '../../hooks/useAuth';
+import useLearnStatus from '../../hooks/useLearnStatus';
 import api from '../../services/api';
 
 const NAV_ITEMS = [
@@ -27,6 +29,7 @@ export default function Sidebar({ userName }) {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const { hasNewContent, showCoachmark, dismissCoachmark } = useLearnStatus();
 
   useEffect(() => {
     api
@@ -44,19 +47,36 @@ export default function Sidebar({ userName }) {
     <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:h-screen lg:w-60 lg:flex-col lg:border-r lg:border-gray-100 lg:bg-white">
       <div className="flex items-center justify-between px-6 py-6">
         <Logo size="md" />
-        <button
-          type="button"
-          onClick={() => navigate('/notifications')}
-          aria-label="Notifications"
-          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-600 transition-colors hover:bg-primary-200"
-        >
-          <Notification variant="Linear" color="currentColor" className="h-4 w-4" />
-          {unreadCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary-600 px-1 text-[10px] font-bold leading-none text-white">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => navigate('/learn')}
+              aria-label="Learn"
+              className="relative z-50 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-600 transition-colors hover:bg-primary-200"
+            >
+              <Book variant="Linear" color="currentColor" className="h-4 w-4" />
+              {hasNewContent && (
+                <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full bg-primary-600 ring-2 ring-white" />
+              )}
+            </button>
+            {showCoachmark && <LearnCoachmark onDismiss={dismissCoachmark} />}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate('/notifications')}
+            aria-label="Notifications"
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-600 transition-colors hover:bg-primary-200"
+          >
+            <Notification variant="Linear" color="currentColor" className="h-4 w-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary-600 px-1 text-[10px] font-bold leading-none text-white">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 px-3">

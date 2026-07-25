@@ -48,6 +48,30 @@ DAILY_ROUTINES = {
             'duration': '5 minutes',
             'icon': 'stretch',
         },
+        {
+            'title': 'Review your birth plan with your partner',
+            'description': 'Talking through what matters most to you can help you both feel more prepared.',
+            'duration': '15 minutes',
+            'icon': 'heart',
+        },
+        {
+            'title': 'Read about what to expect during labor',
+            'description': 'A little knowledge now can help the unknown feel less daunting later.',
+            'duration': '10 minutes',
+            'icon': 'read',
+        },
+        {
+            'title': 'Take a moment to write a letter to your baby',
+            'description': 'Whatever you want to say, this is a lovely way to mark this time.',
+            'duration': '10 minutes',
+            'icon': 'journal',
+        },
+        {
+            'title': 'Pack one item for your hospital bag',
+            'description': 'One small step today means less to think about later.',
+            'duration': '5 minutes',
+            'icon': 'bag',
+        },
     ],
     'postpartum': [
         {
@@ -97,6 +121,30 @@ DAILY_ROUTINES = {
             'description': 'Just one. Let your shoulders drop and give yourself this small moment of calm.',
             'duration': '1 minute',
             'icon': 'breath',
+        },
+        {
+            'title': 'Learn the difference between baby blues and postpartum depression',
+            'description': 'Knowing what is typical and what is worth mentioning to your GP or midwife can bring peace of mind.',
+            'duration': '5 minutes',
+            'icon': 'read',
+        },
+        {
+            'title': 'Try skin-to-skin contact today',
+            'description': 'Even a few quiet minutes of closeness can be soothing for you both.',
+            'duration': '10 minutes',
+            'icon': 'heart',
+        },
+        {
+            'title': 'Say yes if someone offers to help',
+            'description': 'You do not have to do it all today — accepting support is self-care too.',
+            'duration': '2 minutes',
+            'icon': 'heart',
+        },
+        {
+            'title': 'Notice one moment of joy today',
+            'description': 'Even on hard days, small bright moments count.',
+            'duration': '2 minutes',
+            'icon': 'gratitude',
         },
     ],
 }

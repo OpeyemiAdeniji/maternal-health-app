@@ -37,6 +37,22 @@ export default function HealthcareContact() {
 
   const addContact = () => setContacts((prev) => [...prev, blankContact()]);
 
+  // Safety Net is the last onboarding step — this is what actually marks onboarding
+  // complete, whether the user saved contacts or skipped this step entirely
+  const finishOnboarding = async () => {
+    await api.patch('/api/auth/profile/', { onboarding_complete: true });
+    navigate('/dashboard');
+  };
+
+  const handleSkip = async () => {
+    setError('');
+    try {
+      await finishOnboarding();
+    } catch {
+      setError("We couldn't complete setup. Please try again.");
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     setError('');
@@ -54,14 +70,14 @@ export default function HealthcareContact() {
     // both fields are optional overall, but a contact needs both to be worth saving
     const complete = contacts.filter((contact) => contact.name.trim() && contact.phone.trim());
     if (complete.length === 0) {
-      navigate('/motherhood-stage');
+      await handleSkip();
       return;
     }
 
     setSubmitting(true);
     try {
       await Promise.all(complete.map((contact) => api.post('/api/contacts/', contact)));
-      navigate('/motherhood-stage');
+      await finishOnboarding();
     } catch {
       setError("We couldn't save your contacts, but you can add them later from your profile.");
     } finally {
@@ -126,7 +142,7 @@ export default function HealthcareContact() {
           <AuthButton type="submit" disabled={submitting}>
             {submitting ? 'Saving…' : 'Save & Continue'}
           </AuthButton>
-          <AuthButton variant="secondary" type="button" onClick={() => navigate('/motherhood-stage')}>
+          <AuthButton variant="secondary" type="button" onClick={handleSkip}>
             Skip for now
           </AuthButton>
         </form>

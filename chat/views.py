@@ -14,6 +14,39 @@ from .models import ChatMessage
 from .serializers import ChatInputSerializer, ChatMessageSerializer
 
 
+def _stage_context(user):
+    stage = user.motherhood_stage
+
+    if stage == 'pregnant':
+        details = []
+        if user.pregnancy_week:
+            details.append(f"{user.pregnancy_week} weeks along")
+        if user.due_date:
+            details.append(f"due {user.due_date}")
+        if details:
+            return f"They are pregnant, {', '.join(details)}."
+        return "They are pregnant."
+
+    if stage == 'postpartum':
+        details = []
+        if user.baby_age_months is not None:
+            details.append(f"gave birth {user.baby_age_months} months ago")
+        if user.feeding_method:
+            details.append(f"are currently {user.feeding_method}")
+        if len(details) == 2:
+            return f"They {details[0]} and {details[1]}."
+        if details:
+            return f"They {details[0]}."
+        return None
+
+    if stage in ('seasoned', 'exploring'):
+        if user.stage_reason:
+            return f"Context: {user.stage_reason}."
+        return None
+
+    return None
+
+
 def build_system_prompt(user):
     since = timezone.localdate() - timedelta(days=7)
     checkins = CheckIn.objects.filter(user=user, date__gte=since).order_by('date')
@@ -35,9 +68,16 @@ def build_system_prompt(user):
     else:
         journal_summary = 'No recent journal entries.'
 
-    return (
+    intro = (
         f"You are Moda, a warm and supportive maternal mental health companion inside the "
-        f"Modacare app. You are talking with {user.full_name}.\n\n"
+        f"Modacare app. You are talking with {user.full_name}."
+    )
+    stage_context = _stage_context(user)
+    if stage_context:
+        intro = f"{intro} {stage_context}"
+
+    return (
+        f"{intro}\n\n"
         f"Their check-ins from the last 7 days: {mood_summary}\n"
         f"Their recent journal sentiment: {journal_summary}\n\n"
         "Be gentle, empathetic, and encouraging. Never diagnose any condition, and never "

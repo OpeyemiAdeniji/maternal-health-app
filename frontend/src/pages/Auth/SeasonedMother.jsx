@@ -21,8 +21,8 @@ export default function SeasonedMother() {
     setError('');
     setSubmitting(true);
     try {
-      await api.put('/api/auth/profile/', { stage_reason: reason || '' });
-      navigate('/dashboard');
+      await api.patch('/api/auth/profile/', { stage_reason: reason || '' });
+      navigate('/healthcare-contact');
     } catch {
       setError("We couldn't save your details. Please try again.");
     } finally {

@@ -1,4 +1,4 @@
-import { Microphone2, Trash } from 'iconsax-react';
+import { Microphone2, More2 } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import Button from '../../components/common/Button';
 import useSpeechRecognition from '../../hooks/useSpeechRecognition';
@@ -48,6 +48,85 @@ function extractErrorMessage(err) {
   return Array.isArray(firstValue) ? firstValue[0] : 'Something went wrong. Please try again.';
 }
 
+function tagButtonClass(selected) {
+  return `shrink-0 rounded-pill border px-4 py-2 text-sm font-medium capitalize transition-colors duration-200 ${
+    selected
+      ? 'border-primary-600 bg-primary-600 text-white'
+      : 'border-primary-600 bg-white text-primary-600 hover:bg-primary-50'
+  }`;
+}
+
+// shared bottom-sheet chrome — same convention as Dashboard's LoveNoteModal
+function Sheet({ children }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-8 pt-16 sm:items-center">
+      <div className="w-full max-w-sm rounded-card bg-white p-6 shadow-soft">{children}</div>
+    </div>
+  );
+}
+
+function EditEntryModal({ entry, onClose, onSaved }) {
+  const [bodyText, setBodyText] = useState(entry.body_text);
+  const [moodTag, setMoodTag] = useState(entry.mood_tag || '');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSave = async () => {
+    setError('');
+    setSubmitting(true);
+    try {
+      const { data } = await api.patch(`/api/journal/${entry.id}/`, { body_text: bodyText, mood_tag: moodTag });
+      onSaved(data);
+    } catch (err) {
+      setError(extractErrorMessage(err));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Sheet>
+      <h2 className="text-base font-semibold text-ink">Edit entry</h2>
+      <textarea
+        value={bodyText}
+        onChange={(e) => setBodyText(e.target.value)}
+        rows={6}
+        className="mt-4 w-full resize-none rounded-input border border-gray-200 p-3 text-sm text-ink outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+      />
+      <div className="mt-4 flex flex-wrap gap-2">
+        {MOOD_TAGS.map((tag) => (
+          <button
+            key={tag}
+            type="button"
+            onClick={() => setMoodTag(moodTag === tag ? '' : tag)}
+            className={tagButtonClass(moodTag === tag)}
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
+      {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
+      <div className="mt-6 flex gap-3">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-1 rounded-pill border border-gray-200 py-3 text-sm font-semibold text-ink"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={submitting || !bodyText.trim()}
+          className="flex-1 rounded-pill bg-brand py-3 text-sm font-semibold text-white disabled:opacity-50"
+        >
+          {submitting ? 'Saving…' : 'Save changes'}
+        </button>
+      </div>
+    </Sheet>
+  );
+}
+
 export default function Journal() {
   const [bodyText, setBodyText] = useState('');
   const [moodTag, setMoodTag] = useState('');
@@ -57,6 +136,11 @@ export default function Journal() {
   const [suggestedTags, setSuggestedTags] = useState([]);
   const [entries, setEntries] = useState([]);
   const [entriesLoaded, setEntriesLoaded] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
 
   const { isListening, transcript, startListening, stopListening, isSupported } = useSpeechRecognition();
 
@@ -84,13 +168,24 @@ export default function Journal() {
       .finally(() => setEntriesLoaded(true));
   }, []);
 
-  const handleDeleteEntry = async (id) => {
+  const handleConfirmDelete = async () => {
+    setDeleteSubmitting(true);
     try {
-      await api.delete(`/api/journal/${id}/`);
-      setEntries((prev) => prev.filter((entry) => entry.id !== id));
+      await api.delete(`/api/journal/${deleteTargetId}/`);
+      setEntries((prev) => prev.filter((entry) => entry.id !== deleteTargetId));
+      setDeleteTargetId(null);
+      setShowDeleteSuccess(true);
     } catch {
       // leave the card in place — the user can retry the delete
+      setDeleteTargetId(null);
+    } finally {
+      setDeleteSubmitting(false);
     }
+  };
+
+  const handleEntrySaved = (updatedEntry) => {
+    setEntries((prev) => prev.map((entry) => (entry.id === updatedEntry.id ? updatedEntry : entry)));
+    setEditingEntry(null);
   };
 
   const toggleMic = () => {
@@ -104,16 +199,7 @@ export default function Journal() {
   const renderTagButton = (tag) => {
     const selected = moodTag === tag;
     return (
-      <button
-        key={tag}
-        type="button"
-        onClick={() => setMoodTag(selected ? '' : tag)}
-        className={`shrink-0 rounded-pill border px-4 py-2 text-sm font-medium capitalize transition-colors duration-200 ${
-          selected
-            ? 'border-primary-600 bg-primary-600 text-white'
-            : 'border-primary-600 bg-white text-primary-600 hover:bg-primary-50'
-        }`}
-      >
+      <button key={tag} type="button" onClick={() => setMoodTag(selected ? '' : tag)} className={tagButtonClass(selected)}>
         {tag}
       </button>
     );
@@ -226,14 +312,43 @@ export default function Journal() {
                 <div key={entry.id} className="rounded-card bg-white p-4 shadow-soft">
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-xs text-muted">{formatEntryDate(entry.created_at)}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteEntry(entry.id)}
-                      aria-label="Delete entry"
-                      className="shrink-0 text-gray-400 transition-colors hover:text-red-500"
-                    >
-                      <Trash variant="Linear" color="currentColor" className="h-4 w-4" />
-                    </button>
+                    <div className="relative shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setOpenMenuId(openMenuId === entry.id ? null : entry.id)}
+                        aria-label="Entry options"
+                        className="text-gray-400 transition-colors hover:text-ink"
+                      >
+                        <More2 variant="Linear" color="currentColor" className="h-4 w-4" />
+                      </button>
+                      {openMenuId === entry.id && (
+                        <>
+                          <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
+                          <div className="absolute right-0 top-6 z-20 w-32 overflow-hidden rounded-card bg-white shadow-soft">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingEntry(entry);
+                                setOpenMenuId(null);
+                              }}
+                              className="block w-full px-4 py-2.5 text-left text-sm text-ink hover:bg-gray-50"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDeleteTargetId(entry.id);
+                                setOpenMenuId(null);
+                              }}
+                              className="block w-full px-4 py-2.5 text-left text-sm text-red-500 hover:bg-gray-50"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                   {entry.mood_tag && (
                     <span className="mt-2 inline-block rounded-pill bg-primary-100 px-3 py-1 text-xs font-medium capitalize text-primary-700">
@@ -247,6 +362,47 @@ export default function Journal() {
           )}
         </div>
       </div>
+
+      {editingEntry && (
+        <EditEntryModal entry={editingEntry} onClose={() => setEditingEntry(null)} onSaved={handleEntrySaved} />
+      )}
+
+      {deleteTargetId !== null && (
+        <Sheet>
+          <h2 className="text-base font-semibold text-ink">Delete this entry?</h2>
+          <p className="mt-2 text-sm text-muted">This can't be undone.</p>
+          <div className="mt-6 flex gap-3">
+            <button
+              type="button"
+              onClick={() => setDeleteTargetId(null)}
+              className="flex-1 rounded-pill border border-gray-200 py-3 text-sm font-semibold text-ink"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmDelete}
+              disabled={deleteSubmitting}
+              className="flex-1 rounded-pill bg-red-500 py-3 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {deleteSubmitting ? 'Deleting…' : 'Delete'}
+            </button>
+          </div>
+        </Sheet>
+      )}
+
+      {showDeleteSuccess && (
+        <Sheet>
+          <p className="text-center text-base font-semibold text-ink">Entry deleted</p>
+          <button
+            type="button"
+            onClick={() => setShowDeleteSuccess(false)}
+            className="mt-6 w-full rounded-pill bg-brand py-3 text-sm font-semibold text-white"
+          >
+            OK
+          </button>
+        </Sheet>
+      )}
     </div>
   );
 }

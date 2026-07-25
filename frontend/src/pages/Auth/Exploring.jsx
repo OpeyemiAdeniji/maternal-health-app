@@ -29,8 +29,8 @@ export default function Exploring() {
     setSubmitting(true);
     try {
       const stageReason = [broughtHere, supporting].filter(Boolean).join(' — ');
-      await api.put('/api/auth/profile/', { stage_reason: stageReason });
-      navigate('/dashboard');
+      await api.patch('/api/auth/profile/', { stage_reason: stageReason });
+      navigate('/healthcare-contact');
     } catch {
       setError("We couldn't save your details. Please try again.");
     } finally {

@@ -6,7 +6,7 @@ const SIZES = {
 
 export default function Logo({ size = 'md', className = '' }) {
   return (
-    <span className={`font-bold tracking-tight text-primary-600 ${SIZES[size]} ${className}`}>
+    <span className={`font-bold uppercase tracking-[4px] text-primary-600 ${SIZES[size]} ${className}`}>
       Modacare
     </span>
   );

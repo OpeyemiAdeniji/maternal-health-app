@@ -25,20 +25,28 @@ AFFIRMATION_SYSTEM_PROMPT = (
 
 
 def _weekly_mood(user):
-    # last 7 days including today, chronological order
+    # last 7 days including today, one representative score per day (the most recent check-in of
+    # that day) rather than one per row — otherwise a day with several check-ins would skew both
+    # the average and the recent-vs-earlier trend split
     since = timezone.localdate() - timedelta(days=6)
-    checkins = list(CheckIn.objects.filter(user=user, date__gte=since).order_by('date'))
-    if not checkins:
+    checkins = CheckIn.objects.filter(user=user, date__gte=since).order_by('-date', '-created_at')
+
+    daily_mood = {}
+    for c in checkins:
+        daily_mood.setdefault(c.date, c.mood_score)
+    if not daily_mood:
         return None, None
 
-    average = sum(c.mood_score for c in checkins) / len(checkins)
+    scores = [daily_mood[d] for d in sorted(daily_mood.keys())]  # chronological
 
-    recent, earlier = checkins[-3:], checkins[:-3]
+    average = sum(scores) / len(scores)
+
+    recent, earlier = scores[-3:], scores[:-3]
     if not earlier:
         trend = 'stable'
     else:
-        recent_avg = sum(c.mood_score for c in recent) / len(recent)
-        earlier_avg = sum(c.mood_score for c in earlier) / len(earlier)
+        recent_avg = sum(recent) / len(recent)
+        earlier_avg = sum(earlier) / len(earlier)
         if recent_avg > earlier_avg:
             trend = 'improving'
         elif recent_avg < earlier_avg:

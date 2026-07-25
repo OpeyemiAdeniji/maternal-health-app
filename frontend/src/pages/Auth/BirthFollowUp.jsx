@@ -25,8 +25,8 @@ export default function BirthFollowUp() {
       const payload = {};
       if (babyAgeMonths !== '') payload.baby_age_months = parseInt(babyAgeMonths, 10);
       if (feeding) payload.feeding_method = feeding;
-      await api.put('/api/auth/profile/', payload);
-      navigate('/dashboard');
+      await api.patch('/api/auth/profile/', payload);
+      navigate('/healthcare-contact');
     } catch {
       setError("We couldn't save your details. Please try again.");
     } finally {

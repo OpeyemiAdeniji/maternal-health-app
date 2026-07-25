@@ -65,7 +65,7 @@ export default function Register() {
     setSubmitting(true);
     try {
       await register(form);
-      navigate('/healthcare-contact');
+      navigate('/motherhood-stage');
     } catch (err) {
       setError(getBackendErrorMessage(err));
     } finally {
