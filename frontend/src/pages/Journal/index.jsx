@@ -140,6 +140,7 @@ export default function Journal() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [deleteTargetId, setDeleteTargetId] = useState(null);
   const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false);
 
   const { isListening, transcript, startListening, stopListening, isSupported } = useSpeechRecognition();
@@ -170,14 +171,16 @@ export default function Journal() {
 
   const handleConfirmDelete = async () => {
     setDeleteSubmitting(true);
+    setDeleteError('');
     try {
       await api.delete(`/api/journal/${deleteTargetId}/`);
       setEntries((prev) => prev.filter((entry) => entry.id !== deleteTargetId));
       setDeleteTargetId(null);
       setShowDeleteSuccess(true);
     } catch {
-      // leave the card in place — the user can retry the delete
-      setDeleteTargetId(null);
+      // leave the card and the confirmation sheet in place so the user can see
+      // what happened and retry, instead of it just silently closing
+      setDeleteError("We couldn't delete this entry. Please try again.");
     } finally {
       setDeleteSubmitting(false);
     }
@@ -339,6 +342,7 @@ export default function Journal() {
                               type="button"
                               onClick={() => {
                                 setDeleteTargetId(entry.id);
+                                setDeleteError('');
                                 setOpenMenuId(null);
                               }}
                               className="block w-full px-4 py-2.5 text-left text-sm text-red-500 hover:bg-gray-50"
@@ -371,10 +375,14 @@ export default function Journal() {
         <Sheet>
           <h2 className="text-base font-semibold text-ink">Delete this entry?</h2>
           <p className="mt-2 text-sm text-muted">This can't be undone.</p>
+          {deleteError && <p className="mt-3 text-sm text-red-500">{deleteError}</p>}
           <div className="mt-6 flex gap-3">
             <button
               type="button"
-              onClick={() => setDeleteTargetId(null)}
+              onClick={() => {
+                setDeleteTargetId(null);
+                setDeleteError('');
+              }}
               className="flex-1 rounded-pill border border-gray-200 py-3 text-sm font-semibold text-ink"
             >
               Cancel
