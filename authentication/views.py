@@ -129,6 +129,21 @@ class HealthcareContactDetailView(generics.RetrieveUpdateDestroyAPIView):
         return HealthcareContact.objects.filter(user=self.request.user)
 
 
+class DeleteAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        password = request.data.get('password', '')
+        if not request.user.check_password(password):
+            return Response({'password': ['Incorrect password.']}, status=status.HTTP_400_BAD_REQUEST)
+
+        logger.info('Deleting account for user id=%s email=%s', request.user.id, request.user.email)
+        # every related model (HealthcareContact, CheckIn, JournalEntry, EPDSResult, etc.)
+        # is on_delete=CASCADE, so this one call removes all of the user's data
+        request.user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class SaveFCMTokenView(APIView):
     permission_classes = [IsAuthenticated]
 

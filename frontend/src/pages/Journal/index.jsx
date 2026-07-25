@@ -67,15 +67,19 @@ function Sheet({ children }) {
 
 function EditEntryModal({ entry, onClose, onSaved }) {
   const [bodyText, setBodyText] = useState(entry.body_text);
-  const [moodTag, setMoodTag] = useState(entry.mood_tag || '');
+  const [moodTags, setMoodTags] = useState(entry.mood_tags || []);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const toggleTag = (tag) => {
+    setMoodTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+  };
 
   const handleSave = async () => {
     setError('');
     setSubmitting(true);
     try {
-      const { data } = await api.patch(`/api/journal/${entry.id}/`, { body_text: bodyText, mood_tag: moodTag });
+      const { data } = await api.patch(`/api/journal/${entry.id}/`, { body_text: bodyText, mood_tags: moodTags });
       onSaved(data);
     } catch (err) {
       setError(extractErrorMessage(err));
@@ -98,8 +102,8 @@ function EditEntryModal({ entry, onClose, onSaved }) {
           <button
             key={tag}
             type="button"
-            onClick={() => setMoodTag(moodTag === tag ? '' : tag)}
-            className={tagButtonClass(moodTag === tag)}
+            onClick={() => toggleTag(tag)}
+            className={tagButtonClass(moodTags.includes(tag))}
           >
             {tag}
           </button>
@@ -129,7 +133,7 @@ function EditEntryModal({ entry, onClose, onSaved }) {
 
 export default function Journal() {
   const [bodyText, setBodyText] = useState('');
-  const [moodTag, setMoodTag] = useState('');
+  const [moodTags, setMoodTags] = useState([]);
   const [error, setError] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -200,9 +204,14 @@ export default function Journal() {
   };
 
   const renderTagButton = (tag) => {
-    const selected = moodTag === tag;
+    const selected = moodTags.includes(tag);
     return (
-      <button key={tag} type="button" onClick={() => setMoodTag(selected ? '' : tag)} className={tagButtonClass(selected)}>
+      <button
+        key={tag}
+        type="button"
+        onClick={() => setMoodTags((prev) => (selected ? prev.filter((t) => t !== tag) : [...prev, tag]))}
+        className={tagButtonClass(selected)}
+      >
         {tag}
       </button>
     );
@@ -213,11 +222,11 @@ export default function Journal() {
     setError('');
     setSubmitting(true);
     try {
-      const { data } = await api.post('/api/journal/', { body_text: bodyText, mood_tag: moodTag });
+      const { data } = await api.post('/api/journal/', { body_text: bodyText, mood_tags: moodTags });
       setEntries((prev) => [data, ...prev]);
       setSubmitted(true);
       setBodyText('');
-      setMoodTag('');
+      setMoodTags([]);
     } catch (err) {
       setError(extractErrorMessage(err));
     } finally {
@@ -354,10 +363,17 @@ export default function Journal() {
                       )}
                     </div>
                   </div>
-                  {entry.mood_tag && (
-                    <span className="mt-2 inline-block rounded-pill bg-primary-100 px-3 py-1 text-xs font-medium capitalize text-primary-700">
-                      {entry.mood_tag}
-                    </span>
+                  {entry.mood_tags && entry.mood_tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {entry.mood_tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-block rounded-pill bg-primary-100 px-3 py-1 text-xs font-medium capitalize text-primary-700"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   )}
                   <p className="mt-2 text-sm text-ink">{previewText(entry.body_text)}</p>
                 </div>

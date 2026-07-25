@@ -1,7 +1,12 @@
-import { ArrowLeft2 } from 'iconsax-react';
+import { ArrowLeft2, Link1 } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../services/api';
+
+function formatReviewedDate(dateKey) {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
 export default function LearnDetail() {
   const { id } = useParams();
@@ -47,6 +52,31 @@ export default function LearnDetail() {
               <p key={index}>{paragraph}</p>
             ))}
           </div>
+
+          {topic.source_name && (
+            <div className="mt-6 rounded-card border border-gray-100 bg-[#fafafa] p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">Source</p>
+              <p className="mt-1.5 text-sm text-ink">{topic.attribution_note}</p>
+              <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                {topic.source_url && (
+                  <a
+                    href={topic.source_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1 text-sm font-medium text-primary-600"
+                  >
+                    <Link1 variant="Linear" color="currentColor" className="h-3.5 w-3.5" />
+                    View source ({topic.source_name})
+                  </a>
+                )}
+                {topic.last_reviewed_at && (
+                  <span className="text-xs text-muted">
+                    Last reviewed {formatReviewedDate(topic.last_reviewed_at)}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

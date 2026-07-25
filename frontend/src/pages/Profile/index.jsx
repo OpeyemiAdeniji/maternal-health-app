@@ -35,6 +35,38 @@ const STAGE_OPTIONS = [
   { value: 'exploring', label: 'Just exploring', emoji: '🌸' },
 ];
 
+const FEEDING_OPTIONS = [
+  { value: 'Breastfeeding', label: 'Breastfeeding' },
+  { value: 'Formula feeding', label: 'Formula feeding' },
+  { value: 'Combination feeding', label: 'Combination feeding' },
+  { value: 'Not sure yet', label: 'Not sure yet' },
+];
+
+const MARITAL_STATUS_OPTIONS = [
+  { value: 'single', label: 'Single' },
+  { value: 'married_partnered', label: 'Married / Partnered' },
+  { value: 'divorced_separated', label: 'Divorced / Separated' },
+  { value: 'widowed', label: 'Widowed' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+];
+
+const EMPLOYMENT_STATUS_OPTIONS = [
+  { value: 'full_time', label: 'Working full-time' },
+  { value: 'part_time', label: 'Working part-time' },
+  { value: 'stay_at_home', label: 'Stay-at-home parent' },
+  { value: 'studying', label: 'Studying' },
+  { value: 'not_working', label: 'Not currently working' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+];
+
+function optionLabel(options, value) {
+  return options.find((option) => option.value === value)?.label || 'Add';
+}
+
+function numberOrAdd(value) {
+  return value || value === 0 ? value : 'Add';
+}
+
 const RELATIONSHIP_OPTIONS = [
   { value: 'partner', label: 'Partner' },
   { value: 'friend', label: 'Best Friend' },
@@ -111,6 +143,96 @@ function Row({ icon, iconBg, label, labelClassName, value, chevron = true, expan
   );
 }
 
+function SelectField({ label, value, onChange, options }) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-sm font-medium text-ink">{label}</span>
+      <select
+        value={value}
+        onChange={onChange}
+        className="w-full rounded-input border border-gray-200 bg-white px-4 py-3 text-base text-ink outline-none transition-colors focus:border-primary-500 focus:ring-4 focus:ring-primary-100"
+      >
+        <option value="">Not set</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function ChangeStageConfirmModal({ onConfirm, onCancel }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-8 pt-16 sm:items-center">
+      <div className="w-full max-w-sm rounded-card bg-white p-6 shadow-soft">
+        <h2 className="text-base font-semibold text-ink">Change your stage?</h2>
+        <p className="mt-2 text-sm text-muted">
+          This will update the content and support tailored to you — continue?
+        </p>
+        <div className="mt-6 flex gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-pill border border-gray-200 py-3 text-sm font-semibold text-ink"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="flex-1 rounded-pill bg-brand py-3 text-sm font-semibold text-white"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DeleteAccountConfirmModal({ password, onPasswordChange, onConfirm, onCancel, saving, error }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-8 pt-16 sm:items-center">
+      <div className="w-full max-w-sm rounded-card bg-white p-6 shadow-soft">
+        <h2 className="text-base font-semibold text-ink">Delete your account?</h2>
+        <p className="mt-2 text-sm text-muted">
+          This permanently deletes your check-ins, journal, chat history, EPDS results, and Safety Net
+          contacts. This cannot be undone.
+        </p>
+        <div className="mt-4">
+          <Input
+            label="Confirm your password"
+            type="password"
+            name="delete_password"
+            value={password}
+            onChange={(e) => onPasswordChange(e.target.value)}
+            error={error}
+          />
+        </div>
+        <div className="mt-6 flex gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-pill border border-gray-200 py-3 text-sm font-semibold text-ink"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={saving || !password}
+            className="flex-1 rounded-pill bg-red-600 py-3 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {saving ? 'Deleting…' : 'Delete my account'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ContactForm({ draft, onChange, onSave, onCancel, onDelete, saving, error }) {
   return (
     <div className="space-y-3">
@@ -174,10 +296,28 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [profileError, setProfileError] = useState('');
 
-  const [accountForm, setAccountForm] = useState({ full_name: '', country: 'IRELAND', motherhood_stage: 'postpartum' });
+  const [accountForm, setAccountForm] = useState({
+    full_name: '',
+    country: 'IRELAND',
+    motherhood_stage: 'postpartum',
+    pregnancy_week: '',
+    due_date: '',
+    baby_age_months: '',
+    feeding_method: '',
+    marital_status: '',
+    number_of_children: '',
+    employment_status: '',
+    stage_reason: '',
+  });
   const [expandedAccountField, setExpandedAccountField] = useState(null);
   const [accountSaving, setAccountSaving] = useState(false);
   const [accountError, setAccountError] = useState('');
+  const [showChangeStageConfirm, setShowChangeStageConfirm] = useState(false);
+
+  const [showDeleteAccountConfirm, setShowDeleteAccountConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteSaving, setDeleteSaving] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const [contacts, setContacts] = useState([]);
   const [editingContactId, setEditingContactId] = useState(null);
@@ -202,6 +342,14 @@ export default function Profile() {
           full_name: data.full_name || '',
           country: data.country || 'IRELAND',
           motherhood_stage: data.motherhood_stage || 'postpartum',
+          pregnancy_week: data.pregnancy_week ?? '',
+          due_date: data.due_date || '',
+          baby_age_months: data.baby_age_months ?? '',
+          feeding_method: data.feeding_method || '',
+          marital_status: data.marital_status || '',
+          number_of_children: data.number_of_children ?? '',
+          employment_status: data.employment_status || '',
+          stage_reason: data.stage_reason || '',
         });
         setNotificationsEnabled(data.notifications_enabled ?? true);
       })
@@ -229,16 +377,20 @@ export default function Profile() {
     setExpandedAccountField((prev) => (prev === field ? null : field));
   };
 
-  const saveAccountField = async () => {
+  // saves just the given field(s) from accountForm — PATCH so untouched fields
+  // (including required ones like full_name) are never at risk of being wiped out
+  const saveField = async (fieldNames) => {
     setAccountError('');
     setAccountSaving(true);
     try {
-      await api.put('/api/auth/profile/', {
-        full_name: accountForm.full_name,
-        country: accountForm.country,
-        motherhood_stage: accountForm.motherhood_stage,
+      const payload = {};
+      fieldNames.forEach((field) => {
+        const value = accountForm[field];
+        // number fields: send null rather than an empty string when cleared
+        payload[field] = value === '' ? null : value;
       });
-      setProfile((prev) => ({ ...prev, ...accountForm }));
+      await api.patch('/api/auth/profile/', payload);
+      setProfile((prev) => ({ ...prev, ...payload }));
       setExpandedAccountField(null);
     } catch (err) {
       setAccountError(extractErrorMessage(err));
@@ -319,12 +471,7 @@ export default function Profile() {
     }
 
     try {
-      await api.put('/api/auth/profile/', {
-        full_name: accountForm.full_name,
-        country: accountForm.country,
-        motherhood_stage: accountForm.motherhood_stage,
-        notifications_enabled: next,
-      });
+      await api.patch('/api/auth/profile/', { notifications_enabled: next });
       setNotificationsSaved(true);
     } catch (err) {
       setNotificationsEnabled(!next);
@@ -337,6 +484,26 @@ export default function Profile() {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const cancelDeleteAccount = () => {
+    setShowDeleteAccountConfirm(false);
+    setDeletePassword('');
+    setDeleteError('');
+  };
+
+  const confirmDeleteAccount = async () => {
+    setDeleteError('');
+    setDeleteSaving(true);
+    try {
+      await api.delete('/api/auth/account/', { data: { password: deletePassword } });
+      logout();
+      navigate('/login');
+    } catch (err) {
+      setDeleteError(extractErrorMessage(err));
+    } finally {
+      setDeleteSaving(false);
+    }
   };
 
   if (loading) {
@@ -387,7 +554,12 @@ export default function Profile() {
                 onChange={(e) => setAccountForm((prev) => ({ ...prev, full_name: e.target.value }))}
               />
               {accountError && <p className="mt-2 text-xs text-red-500">{accountError}</p>}
-              <Button className="mt-3" fullWidth={false} disabled={accountSaving} onClick={saveAccountField}>
+              <Button
+                className="mt-3"
+                fullWidth={false}
+                disabled={accountSaving}
+                onClick={() => saveField(['full_name'])}
+              >
                 {accountSaving ? 'Saving…' : 'Save'}
               </Button>
             </Row>
@@ -415,7 +587,12 @@ export default function Profile() {
                 </select>
               </label>
               {accountError && <p className="mt-2 text-xs text-red-500">{accountError}</p>}
-              <Button className="mt-3" fullWidth={false} disabled={accountSaving} onClick={saveAccountField}>
+              <Button
+                className="mt-3"
+                fullWidth={false}
+                disabled={accountSaving}
+                onClick={() => saveField(['country'])}
+              >
                 {accountSaving ? 'Saving…' : 'Save'}
               </Button>
             </Row>
@@ -423,46 +600,230 @@ export default function Profile() {
             <Row
               icon={<Heart variant="Linear" color="currentColor" size={20} />}
               iconBg="bg-pink-100 text-pink-600"
-              label="Stage"
-              value={stageLabel(accountForm.motherhood_stage)}
-              expanded={expandedAccountField === 'motherhood_stage'}
-              onClick={() => toggleAccountField('motherhood_stage')}
-            >
-              <span className="mb-1.5 block text-sm font-medium text-ink">Motherhood stage</span>
-              <div className="flex flex-col gap-2">
-                {STAGE_OPTIONS.map((stage) => {
-                  const active = accountForm.motherhood_stage === stage.value;
-                  return (
-                    <button
-                      key={stage.value}
-                      type="button"
-                      onClick={() => setAccountForm((prev) => ({ ...prev, motherhood_stage: stage.value }))}
-                      className={`flex h-[52px] w-full items-center justify-between rounded-[10px] border px-4 transition-colors ${
-                        active
-                          ? 'border-gray-200 border-l-4 border-l-primary-600 bg-[#FFF0FE]'
-                          : 'border-gray-200 bg-white'
-                      }`}
-                    >
-                      <span className="flex items-center gap-3 text-sm font-medium text-ink">
-                        <span className="text-lg leading-none">{stage.emoji}</span>
-                        {stage.label}
-                      </span>
-                      <span
-                        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
-                          active ? 'border-primary-600' : 'border-gray-300'
-                        }`}
-                      >
-                        {active && <span className="h-2.5 w-2.5 rounded-full bg-primary-600" />}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              {accountError && <p className="mt-2 text-xs text-red-500">{accountError}</p>}
-              <Button className="mt-3" fullWidth={false} disabled={accountSaving} onClick={saveAccountField}>
-                {accountSaving ? 'Saving…' : 'Save'}
-              </Button>
-            </Row>
+              label="Change your stage"
+              value={stageLabel(profile?.motherhood_stage)}
+              chevron={false}
+              onClick={() => setShowChangeStageConfirm(true)}
+            />
+          </div>
+        </section>
+
+        <section>
+          <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Stage Details</h2>
+          <div className="divide-y divide-[#F0F0F0] overflow-hidden rounded-[12px] bg-white">
+            {profile?.motherhood_stage === 'pregnant' && (
+              <>
+                <Row
+                  icon={<Heart variant="Linear" color="currentColor" size={20} />}
+                  iconBg="bg-pink-100 text-pink-600"
+                  label="Weeks Pregnant"
+                  value={numberOrAdd(accountForm.pregnancy_week)}
+                  expanded={expandedAccountField === 'pregnancy_week'}
+                  onClick={() => toggleAccountField('pregnancy_week')}
+                >
+                  <Input
+                    label="Weeks pregnant"
+                    type="number"
+                    name="pregnancy_week"
+                    value={accountForm.pregnancy_week}
+                    onChange={(e) => setAccountForm((prev) => ({ ...prev, pregnancy_week: e.target.value }))}
+                  />
+                  {accountError && <p className="mt-2 text-xs text-red-500">{accountError}</p>}
+                  <Button
+                    className="mt-3"
+                    fullWidth={false}
+                    disabled={accountSaving}
+                    onClick={() => saveField(['pregnancy_week'])}
+                  >
+                    {accountSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                </Row>
+                <Row
+                  icon={<Heart variant="Linear" color="currentColor" size={20} />}
+                  iconBg="bg-pink-100 text-pink-600"
+                  label="Due Date"
+                  value={accountForm.due_date || 'Add'}
+                  expanded={expandedAccountField === 'due_date'}
+                  onClick={() => toggleAccountField('due_date')}
+                >
+                  <Input
+                    label="Due date"
+                    type="date"
+                    name="due_date"
+                    value={accountForm.due_date}
+                    onChange={(e) => setAccountForm((prev) => ({ ...prev, due_date: e.target.value }))}
+                  />
+                  {accountError && <p className="mt-2 text-xs text-red-500">{accountError}</p>}
+                  <Button
+                    className="mt-3"
+                    fullWidth={false}
+                    disabled={accountSaving}
+                    onClick={() => saveField(['due_date'])}
+                  >
+                    {accountSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                </Row>
+              </>
+            )}
+
+            {profile?.motherhood_stage === 'postpartum' && (
+              <>
+                <Row
+                  icon={<Heart variant="Linear" color="currentColor" size={20} />}
+                  iconBg="bg-pink-100 text-pink-600"
+                  label="Baby's Age (months)"
+                  value={numberOrAdd(accountForm.baby_age_months)}
+                  expanded={expandedAccountField === 'baby_age_months'}
+                  onClick={() => toggleAccountField('baby_age_months')}
+                >
+                  <Input
+                    label="Baby's age (months)"
+                    type="number"
+                    name="baby_age_months"
+                    value={accountForm.baby_age_months}
+                    onChange={(e) => setAccountForm((prev) => ({ ...prev, baby_age_months: e.target.value }))}
+                  />
+                  {accountError && <p className="mt-2 text-xs text-red-500">{accountError}</p>}
+                  <Button
+                    className="mt-3"
+                    fullWidth={false}
+                    disabled={accountSaving}
+                    onClick={() => saveField(['baby_age_months'])}
+                  >
+                    {accountSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                </Row>
+                <Row
+                  icon={<Heart variant="Linear" color="currentColor" size={20} />}
+                  iconBg="bg-pink-100 text-pink-600"
+                  label="Feeding Method"
+                  value={optionLabel(FEEDING_OPTIONS, accountForm.feeding_method)}
+                  expanded={expandedAccountField === 'feeding_method'}
+                  onClick={() => toggleAccountField('feeding_method')}
+                >
+                  <SelectField
+                    label="Feeding method"
+                    value={accountForm.feeding_method}
+                    onChange={(e) => setAccountForm((prev) => ({ ...prev, feeding_method: e.target.value }))}
+                    options={FEEDING_OPTIONS}
+                  />
+                  {accountError && <p className="mt-2 text-xs text-red-500">{accountError}</p>}
+                  <Button
+                    className="mt-3"
+                    fullWidth={false}
+                    disabled={accountSaving}
+                    onClick={() => saveField(['feeding_method'])}
+                  >
+                    {accountSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                </Row>
+              </>
+            )}
+
+            {profile?.motherhood_stage === 'seasoned' && (
+              <>
+                <Row
+                  icon={<Heart variant="Linear" color="currentColor" size={20} />}
+                  iconBg="bg-pink-100 text-pink-600"
+                  label="Marital Status"
+                  value={optionLabel(MARITAL_STATUS_OPTIONS, accountForm.marital_status)}
+                  expanded={expandedAccountField === 'marital_status'}
+                  onClick={() => toggleAccountField('marital_status')}
+                >
+                  <SelectField
+                    label="Marital status"
+                    value={accountForm.marital_status}
+                    onChange={(e) => setAccountForm((prev) => ({ ...prev, marital_status: e.target.value }))}
+                    options={MARITAL_STATUS_OPTIONS}
+                  />
+                  {accountError && <p className="mt-2 text-xs text-red-500">{accountError}</p>}
+                  <Button
+                    className="mt-3"
+                    fullWidth={false}
+                    disabled={accountSaving}
+                    onClick={() => saveField(['marital_status'])}
+                  >
+                    {accountSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                </Row>
+                <Row
+                  icon={<Heart variant="Linear" color="currentColor" size={20} />}
+                  iconBg="bg-pink-100 text-pink-600"
+                  label="Number of Children"
+                  value={numberOrAdd(accountForm.number_of_children)}
+                  expanded={expandedAccountField === 'number_of_children'}
+                  onClick={() => toggleAccountField('number_of_children')}
+                >
+                  <Input
+                    label="Number of children"
+                    type="number"
+                    name="number_of_children"
+                    value={accountForm.number_of_children}
+                    onChange={(e) => setAccountForm((prev) => ({ ...prev, number_of_children: e.target.value }))}
+                  />
+                  {accountError && <p className="mt-2 text-xs text-red-500">{accountError}</p>}
+                  <Button
+                    className="mt-3"
+                    fullWidth={false}
+                    disabled={accountSaving}
+                    onClick={() => saveField(['number_of_children'])}
+                  >
+                    {accountSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                </Row>
+                <Row
+                  icon={<Heart variant="Linear" color="currentColor" size={20} />}
+                  iconBg="bg-pink-100 text-pink-600"
+                  label="Employment Status"
+                  value={optionLabel(EMPLOYMENT_STATUS_OPTIONS, accountForm.employment_status)}
+                  expanded={expandedAccountField === 'employment_status'}
+                  onClick={() => toggleAccountField('employment_status')}
+                >
+                  <SelectField
+                    label="Employment status"
+                    value={accountForm.employment_status}
+                    onChange={(e) => setAccountForm((prev) => ({ ...prev, employment_status: e.target.value }))}
+                    options={EMPLOYMENT_STATUS_OPTIONS}
+                  />
+                  {accountError && <p className="mt-2 text-xs text-red-500">{accountError}</p>}
+                  <Button
+                    className="mt-3"
+                    fullWidth={false}
+                    disabled={accountSaving}
+                    onClick={() => saveField(['employment_status'])}
+                  >
+                    {accountSaving ? 'Saving…' : 'Save'}
+                  </Button>
+                </Row>
+              </>
+            )}
+
+            {profile?.motherhood_stage === 'exploring' && (
+              <Row
+                icon={<Heart variant="Linear" color="currentColor" size={20} />}
+                iconBg="bg-pink-100 text-pink-600"
+                label="Reason for Using Modacare"
+                value={accountForm.stage_reason || 'Add'}
+                expanded={expandedAccountField === 'stage_reason'}
+                onClick={() => toggleAccountField('stage_reason')}
+              >
+                <Input
+                  label="Reason for using Modacare"
+                  name="stage_reason"
+                  value={accountForm.stage_reason}
+                  onChange={(e) => setAccountForm((prev) => ({ ...prev, stage_reason: e.target.value }))}
+                />
+                {accountError && <p className="mt-2 text-xs text-red-500">{accountError}</p>}
+                <Button
+                  className="mt-3"
+                  fullWidth={false}
+                  disabled={accountSaving}
+                  onClick={() => saveField(['stage_reason'])}
+                >
+                  {accountSaving ? 'Saving…' : 'Save'}
+                </Button>
+              </Row>
+            )}
           </div>
         </section>
 
@@ -555,7 +916,7 @@ export default function Profile() {
         </section>
 
         <section>
-          <div className="overflow-hidden rounded-[12px] bg-red-50">
+          <div className="divide-y divide-red-100 overflow-hidden rounded-[12px] bg-red-50">
             <Row
               icon={<Logout variant="Linear" color="currentColor" size={20} />}
               iconBg="bg-red-100 text-red-600"
@@ -564,9 +925,35 @@ export default function Profile() {
               chevron
               onClick={handleLogout}
             />
+            <Row
+              icon={<Trash variant="Linear" color="currentColor" size={20} />}
+              iconBg="bg-red-100 text-red-600"
+              label="Delete Account"
+              labelClassName="text-red-600"
+              chevron
+              onClick={() => setShowDeleteAccountConfirm(true)}
+            />
           </div>
         </section>
       </div>
+
+      {showChangeStageConfirm && (
+        <ChangeStageConfirmModal
+          onCancel={() => setShowChangeStageConfirm(false)}
+          onConfirm={() => navigate('/motherhood-stage')}
+        />
+      )}
+
+      {showDeleteAccountConfirm && (
+        <DeleteAccountConfirmModal
+          password={deletePassword}
+          onPasswordChange={setDeletePassword}
+          onCancel={cancelDeleteAccount}
+          onConfirm={confirmDeleteAccount}
+          saving={deleteSaving}
+          error={deleteError}
+        />
+      )}
     </div>
   );
 }

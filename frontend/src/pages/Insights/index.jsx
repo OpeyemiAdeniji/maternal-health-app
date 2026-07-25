@@ -1,6 +1,7 @@
 import { ArrowRight2, EmojiHappy, Health, Link, Moon, Notepad2 } from 'iconsax-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Bar, BarChart, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { toDateKey } from '../../utils/date';
 
@@ -73,10 +74,10 @@ function EmptyState({ children }) {
 
 // Apple Health "Trends" card: icon + coloured title, a plain-language
 // summary sentence, a divider, then the chart, then a small range caption.
-function TrendCard({ icon, title, summary, rangeLabel, children }) {
+function TrendCard({ icon, title, summary, rangeLabel, onClick, children }) {
   return (
     <section className="rounded-card bg-white p-5 shadow-soft">
-      <button type="button" className="flex w-full items-center justify-between text-left">
+      <button type="button" onClick={onClick} className="flex w-full items-center justify-between text-left">
         <span className="flex items-center gap-2">
           <span className="text-base">{icon}</span>
           <span className="text-[15px] font-semibold" style={{ color: ACCENT }}>
@@ -133,6 +134,7 @@ function TrendBarChart({ data, dataKey, domain, averageValue, averageLabel, barF
 }
 
 export default function Insights() {
+  const navigate = useNavigate();
   const [checkins, setCheckins] = useState([]);
   const [journalEntries, setJournalEntries] = useState([]);
   const [epdsResults, setEpdsResults] = useState([]);
@@ -197,6 +199,7 @@ export default function Insights() {
             : `You averaged ${moodAvg.toFixed(1)}/5 mood (${MOOD_LABELS[Math.round(moodAvg) - 1]}) over the last 30 days.`
         }
         rangeLabel={moodSleepData.length ? '30 days' : null}
+        onClick={() => navigate('/checkin')}
       >
         {moodSleepData.length === 0 ? (
           <EmptyState>No check-ins in the last 30 days yet.</EmptyState>
@@ -220,6 +223,7 @@ export default function Insights() {
             : `You averaged ${sleepAvg.toFixed(1)}/5 sleep quality (${SLEEP_LABELS[Math.round(sleepAvg) - 1]}) over the last 30 days.`
         }
         rangeLabel={moodSleepData.length ? '30 days' : null}
+        onClick={() => navigate('/checkin')}
       >
         {moodSleepData.length === 0 ? (
           <EmptyState>No check-ins in the last 30 days yet.</EmptyState>
@@ -239,6 +243,7 @@ export default function Insights() {
         title="Mood & Sleep Correlation"
         summary={moodSleepInsight(insights)}
         rangeLabel={moodSleepData.length ? '30 days' : null}
+        onClick={() => navigate('/checkin')}
       >
         {moodSleepData.length === 0 ? (
           <EmptyState>Not enough check-ins yet to compare your mood and sleep.</EmptyState>
@@ -262,6 +267,7 @@ export default function Insights() {
             : `You averaged a score of ${epdsAvg.toFixed(1)} across ${epdsData.length} assessment${epdsData.length === 1 ? '' : 's'}.`
         }
         rangeLabel={epdsData.length ? `${epdsData.length} assessment${epdsData.length === 1 ? '' : 's'}` : null}
+        onClick={() => navigate('/epds')}
       >
         {epdsData.length === 0 ? (
           <EmptyState>You haven't taken a wellbeing assessment yet.</EmptyState>
@@ -299,6 +305,7 @@ export default function Insights() {
             : `You averaged a sentiment score of ${sentimentAvg.toFixed(2)} across your last ${journalTrendData.length} entries.`
         }
         rangeLabel={journalTrendData.length ? '30 days' : null}
+        onClick={() => navigate('/journal')}
       >
         {journalTrendData.length === 0 ? (
           <EmptyState>Write a journal entry to start tracking your sentiment over time.</EmptyState>

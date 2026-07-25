@@ -12,4 +12,16 @@ class LearnTopicListSerializer(serializers.ModelSerializer):
 class LearnTopicDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = LearnTopic
-        fields = ['id', 'stage', 'title', 'summary', 'content', 'category', 'order']
+        fields = [
+            'id',
+            'stage',
+            'title',
+            'summary',
+            'content',
+            'category',
+            'order',
+            'source_name',
+            'source_url',
+            'attribution_note',
+            'last_reviewed_at',
+        ]

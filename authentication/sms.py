@@ -45,3 +45,34 @@ def send_safety_net_link(contact_name, phone_number, relationship_type, token, u
     except Exception:
         # a failed SMS should never break whatever triggered it — just log and move on
         logger.exception('Failed to send safety net SMS to %s', contact_name)
+
+
+def send_love_bombing_contact_alert(contact_name, phone_number, token, user_name):
+    # personal contacts only (partner/friend/family) — deliberately warm and vague, no
+    # mood scores, journal content, or other clinical detail ever go in this message
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+    messaging_service_sid = os.getenv('TWILIO_MESSAGING_SERVICE_SID')
+    frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5173')
+
+    if not account_sid or not auth_token or not messaging_service_sid:
+        logger.warning('Twilio is not configured — skipping love bombing contact alert to %s', contact_name)
+        return
+
+    link = f'{frontend_url}/safety-net/{token}'
+
+    body = (
+        f"Hi {contact_name}, this is Modacare. {user_name}'s companion noticed they might be "
+        f"going through a tough stretch lately. A quick check-in from you could mean a lot "
+        f"right now: {link}"
+    )
+
+    try:
+        client = Client(account_sid, auth_token)
+        client.messages.create(
+            body=body,
+            messaging_service_sid=messaging_service_sid,
+            to=phone_number,
+        )
+    except Exception:
+        logger.exception('Failed to send love bombing contact alert SMS to %s', contact_name)

@@ -28,6 +28,7 @@ export default function Header() {
             type="button"
             onClick={() => navigate('/learn')}
             aria-label="Learn"
+            data-tour-target="learn"
             className="relative z-50 flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-primary-600 transition-colors hover:bg-primary-200"
           >
             <Book variant="Linear" color="currentColor" className="h-5 w-5" />

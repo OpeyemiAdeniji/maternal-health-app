@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../services/api';
 import useEpdsPrompt from './useEpdsPrompt';
+import useTour from './useTour';
 
 export default function useLearnStatus() {
   const location = useLocation();
   const { isEpdsPromptOpen } = useEpdsPrompt();
+  const { isTourActive } = useTour();
   const [hasNewContent, setHasNewContent] = useState(false);
   const [showCoachmark, setShowCoachmark] = useState(false);
 
@@ -34,7 +36,11 @@ export default function useLearnStatus() {
     api.patch('/api/auth/profile/', { learn_coachmark_dismissed: true }).catch(() => {});
   };
 
-  // suppressed while the EPDS prompt is open so the two don't compete for attention —
-  // this only hides it, it doesn't mark it as seen, so it can still appear afterward
-  return { hasNewContent, showCoachmark: showCoachmark && !isEpdsPromptOpen, dismissCoachmark };
+  // suppressed while the EPDS prompt or guided tour is open so nothing competes for
+  // attention — this only hides it, it doesn't mark it as seen, so it can still appear after
+  return {
+    hasNewContent,
+    showCoachmark: showCoachmark && !isEpdsPromptOpen && !isTourActive,
+    dismissCoachmark,
+  };
 }

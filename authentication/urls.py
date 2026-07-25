@@ -9,5 +9,6 @@ urlpatterns = [
     path('reset-password/', views.ResetPasswordView.as_view(), name='auth-reset-password'),
     path('token/refresh/', TokenRefreshView.as_view(), name='auth-token-refresh'),
     path('profile/', views.ProfileView.as_view(), name='auth-profile'),
+    path('account/', views.DeleteAccountView.as_view(), name='auth-delete-account'),
     path('fcm-token/', views.SaveFCMTokenView.as_view(), name='auth-fcm-token'),
 ]

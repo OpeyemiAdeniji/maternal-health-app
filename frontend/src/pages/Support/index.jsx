@@ -1,4 +1,4 @@
-import { ArrowRight2, Call, Headphone, Hospital, Profile2User, Teacher } from 'iconsax-react';
+import { Call, Headphone, Hospital, Profile2User } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
@@ -46,7 +46,6 @@ function CardEyebrowIcon({ icon, label, colorClass }) {
 export default function Support() {
   const [contacts, setContacts] = useState([]);
   const [resources, setResources] = useState([]);
-  const [stageResources, setStageResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -58,10 +57,7 @@ export default function Support() {
 
     api
       .get('/api/support/')
-      .then(({ data }) => {
-        setResources(data.resources || []);
-        setStageResources(data.stage_resources || []);
-      })
+      .then(({ data }) => setResources(data.resources || []))
       .catch(() => setError("We couldn't load your support resources. Please try again later."))
       .finally(() => setLoading(false));
   }, []);
@@ -150,24 +146,6 @@ export default function Support() {
               ))}
             </div>
           </section>
-
-          {stageResources.length > 0 && (
-            <div className="rounded-card bg-white p-5 shadow-soft">
-              <CardEyebrowIcon
-                icon={<Teacher variant="Linear" color="currentColor" className="h-4 w-4" />}
-                label="LEARN"
-                colorClass="text-[#8c5cf5]"
-              />
-              <p className="text-sm text-ink">Explore articles for your stage.</p>
-              <Link
-                to="/learn"
-                className="mt-2 flex items-center gap-1 text-[13px] font-medium text-primary-600"
-              >
-                See more in Learn
-                <ArrowRight2 variant="Linear" color="currentColor" className="h-2.5 w-2.5" />
-              </Link>
-            </div>
-          )}
         </>
       )}
     </div>

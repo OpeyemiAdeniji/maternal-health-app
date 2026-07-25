@@ -1,3 +1,4 @@
+import { Heart } from 'iconsax-react';
 import { useState } from 'react';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import api from '../../services/api';
@@ -19,6 +20,7 @@ export default function PersonalContactPage({ data, token }) {
   const [sent, setSent] = useState(false);
 
   const chartData = data.mood_trend.map((point) => ({ ...point, day: point.date.slice(5) }));
+  const firstName = data.user_name.split(' ')[0];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +43,18 @@ export default function PersonalContactPage({ data, token }) {
         <p className="mt-2 text-sm text-text-secondary">
           Here's a gentle look at how they've been feeling lately.
         </p>
+
+        {data.love_bombing_triggered && (
+          <div className="mt-6 flex items-start gap-3 rounded-xl bg-[#FFF4EC] p-4">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FFE4D1] text-[#f48b41]">
+              <Heart variant="Linear" color="currentColor" className="h-5 w-5" />
+            </span>
+            <p className="text-sm text-text-primary">
+              It looks like {firstName} has been having a tough few days. Reaching out with a message
+              or a call could really help right now.
+            </p>
+          </div>
+        )}
 
         <div className="mt-6 rounded-xl border border-[#f0e6ef] bg-white p-4">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Mood, last 30 days</h2>

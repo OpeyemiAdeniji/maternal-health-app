@@ -29,8 +29,9 @@ export default function Exploring() {
     setSubmitting(true);
     try {
       const stageReason = [broughtHere, supporting].filter(Boolean).join(' — ');
-      await api.patch('/api/auth/profile/', { stage_reason: stageReason });
-      navigate('/healthcare-contact');
+      // exploring-stage users skip Safety Net entirely — this is the final onboarding step for them
+      await api.patch('/api/auth/profile/', { stage_reason: stageReason, onboarding_complete: true });
+      navigate('/dashboard');
     } catch {
       setError("We couldn't save your details. Please try again.");
     } finally {

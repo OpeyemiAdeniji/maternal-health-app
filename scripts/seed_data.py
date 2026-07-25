@@ -162,7 +162,7 @@ def _seed_journal_entries(user, entries):
         return
 
     for mood_tag, body_text in entries:
-        JournalEntry.objects.create(user=user, body_text=body_text, mood_tag=mood_tag)
+        JournalEntry.objects.create(user=user, body_text=body_text, mood_tags=[mood_tag] if mood_tag else [])
 
 
 def _epds_responses_for_score(score):

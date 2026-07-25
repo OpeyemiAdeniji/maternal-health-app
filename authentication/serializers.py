@@ -74,10 +74,14 @@ class ProfileSerializer(serializers.ModelSerializer):
             'baby_age_months',
             'feeding_method',
             'stage_reason',
+            'marital_status',
+            'number_of_children',
+            'employment_status',
             'notifications_enabled',
             'epds_prompt_dismissed_at',
             'last_visited_learn_at',
             'learn_coachmark_dismissed',
+            'exploring_tour_completed',
             'has_new_learn_content',
             'created_at',
             'healthcare_contacts',
@@ -103,6 +107,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         instance.baby_age_months = validated_data.get('baby_age_months', instance.baby_age_months)
         instance.feeding_method = validated_data.get('feeding_method', instance.feeding_method)
         instance.stage_reason = validated_data.get('stage_reason', instance.stage_reason)
+        instance.marital_status = validated_data.get('marital_status', instance.marital_status)
+        instance.number_of_children = validated_data.get('number_of_children', instance.number_of_children)
+        instance.employment_status = validated_data.get('employment_status', instance.employment_status)
         instance.notifications_enabled = validated_data.get('notifications_enabled', instance.notifications_enabled)
         instance.epds_prompt_dismissed_at = validated_data.get(
             'epds_prompt_dismissed_at', instance.epds_prompt_dismissed_at
@@ -112,6 +119,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         )
         instance.learn_coachmark_dismissed = validated_data.get(
             'learn_coachmark_dismissed', instance.learn_coachmark_dismissed
+        )
+        instance.exploring_tour_completed = validated_data.get(
+            'exploring_tour_completed', instance.exploring_tour_completed
         )
         instance.save()
         return instance
