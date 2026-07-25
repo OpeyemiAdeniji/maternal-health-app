@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'chat',
     'scheduler',
     'notifications',
+    'learn',
 ]
 
 MIDDLEWARE = [

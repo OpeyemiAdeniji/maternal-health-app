@@ -2,6 +2,7 @@ import { ArrowRight2, Book1, Cloud, Heart, MessageText1 } from 'iconsax-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
+import useEpdsPrompt from '../../hooks/useEpdsPrompt';
 import api from '../../services/api';
 import { toDateKey } from '../../utils/date';
 
@@ -58,6 +59,14 @@ function checkInStreak(checkins) {
     cursor.setDate(cursor.getDate() - 1);
   }
   return streak;
+}
+
+// what matters for this chip is TODAY specifically, not the historical streak count —
+// a user with a long history who simply hasn't checked in today is not "never checked in"
+function streakChipLabel(checkins, streak, todayCheckIn) {
+  if (checkins.length === 0) return 'No check-ins yet';
+  if (!todayCheckIn) return 'Not checked in today';
+  return `Day ${streak} · Checked in`;
 }
 
 function epdsStatus(lastResult) {
@@ -167,7 +176,8 @@ function LoveNoteModal({ note, onClose }) {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
+  const { setIsEpdsPromptOpen } = useEpdsPrompt();
   const navigate = useNavigate();
   const [checkins, setCheckins] = useState([]);
   const [checkInLoaded, setCheckInLoaded] = useState(false);
@@ -211,7 +221,12 @@ export default function Dashboard() {
 
     api
       .get('/api/auth/profile/')
-      .then(({ data }) => setEpdsPromptDismissedAt(data.epds_prompt_dismissed_at))
+      .then(({ data }) => {
+        setEpdsPromptDismissedAt(data.epds_prompt_dismissed_at);
+        // login only ever returns a minimal user — sync the full profile back into
+        // AuthContext so stageBadgeLabel() (and anything else reading `user`) is current
+        updateUser(data);
+      })
       .catch(() => setEpdsPromptDismissedAt(null))
       .finally(() => setProfileLoaded(true));
   }, []);
@@ -229,6 +244,12 @@ export default function Dashboard() {
     const timer = setTimeout(() => setShowEpdsPrompt(true), 2500);
     return () => clearTimeout(timer);
   }, [epdsResultsLoaded, profileLoaded, epdsLastResult, epdsPromptDismissedAt]);
+
+  // let Header/Sidebar know this modal is open so they can suppress the Learn
+  // coach-mark for as long as it's up, without permanently marking it seen
+  useEffect(() => {
+    setIsEpdsPromptOpen(showEpdsPrompt);
+  }, [showEpdsPrompt, setIsEpdsPromptOpen]);
 
   const handleDismissLoveNote = () => {
     if (!loveNote) return;
@@ -270,7 +291,7 @@ export default function Dashboard() {
             {stageBadgeLabel(user)}
           </span>
           <span className="rounded-full bg-[#FFE5F7] px-2 py-[3px] text-xs font-medium text-[#E65FD9]">
-            {todayCheckIn ? `Day ${streak} · Checked in` : `Day ${streak} streak`}
+            {streakChipLabel(checkins, streak, todayCheckIn)}
           </span>
         </div>
       </div>

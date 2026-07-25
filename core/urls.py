@@ -32,6 +32,7 @@ urlpatterns = [
     path('api/messages/', include('messages_app.urls')),
     path('api/chat/', include('chat.urls')),
     path('api/notifications/', include('notifications.urls')),
+    path('api/learn/', include('learn.urls')),
 
     # public safety-net contact link — no auth, identified by the contact's own token
     path('api/safety-net/<uuid:token>/', PublicContactView.as_view(), name='safety-net-public'),

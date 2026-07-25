@@ -18,6 +18,8 @@ export const ROUTES = {
   EPDS: '/epds',
   EPDS_RESULT: '/epds/result',
   SUPPORT: '/support',
+  LEARN: '/learn',
+  LEARN_DETAIL: '/learn/:id',
   INSIGHTS: '/insights',
   MOOD_HISTORY: '/mood-history',
   NOTIFICATIONS: '/notifications',
