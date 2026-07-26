@@ -188,3 +188,18 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+# TEMPORARY - REMOVE AFTER DEBUGGING DATADOG AGENT CONNECTIVITY
+# One-time startup dump of every RENDER_*/DD_* env var, to see what's actually
+# reaching the process in production. Secret-looking names (KEY/SECRET/TOKEN/
+# PASSWORD) are masked to presence+length only, so this doesn't leak
+# DD_API_KEY or similar in cleartext into Render's log output.
+_debug_secret_markers = ('KEY', 'SECRET', 'TOKEN', 'PASSWORD', 'PWD')
+for _debug_key, _debug_value in sorted(os.environ.items()):
+    if 'RENDER' in _debug_key.upper() or _debug_key.startswith('DD_'):
+        if any(marker in _debug_key.upper() for marker in _debug_secret_markers):
+            _debug_display = f'***SET*** (len={len(_debug_value)})' if _debug_value else '***EMPTY***'
+        else:
+            _debug_display = _debug_value
+        print(f'[STARTUP-DEBUG] {_debug_key}={_debug_display}')
+# END TEMPORARY DEBUG BLOCK - REMOVE AFTER DEBUGGING DATADOG AGENT CONNECTIVITY
