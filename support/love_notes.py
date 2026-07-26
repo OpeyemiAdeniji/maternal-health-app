@@ -1,12 +1,15 @@
 from django.conf import settings
 from django.db import models
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, serializers
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from authentication.models import HealthcareContact
+
+from .serializers import LoveNoteActionResponseSerializer, LoveNoteDetailSerializer
 
 
 class LoveNote(models.Model):
@@ -55,7 +58,9 @@ class LoveNoteView(generics.CreateAPIView):
 
 class LatestLoveNoteView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = LoveNoteDetailSerializer
 
+    @extend_schema(responses=LoveNoteDetailSerializer)
     def get(self, request):
         note = LoveNote.objects.filter(user=request.user, is_read=False).first()
         if not note:
@@ -71,7 +76,9 @@ class LatestLoveNoteView(APIView):
 
 class MarkLoveNoteReadView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = LoveNoteActionResponseSerializer
 
+    @extend_schema(request=None, responses=LoveNoteActionResponseSerializer)
     def patch(self, request, pk):
         note = get_object_or_404(LoveNote, pk=pk, user=request.user)
         note.is_read = True
