@@ -4,6 +4,7 @@ import anthropic
 from django.conf import settings
 from django.http import Http404
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -14,7 +15,7 @@ from journal.models import JournalEntry
 
 from .models import DailyAffirmation, SupportiveMessage
 from .selector import get_daily_affirmation_message, get_love_bombing_messages
-from .serializers import SupportiveMessageSerializer
+from .serializers import DailyAffirmationResponseSerializer, LoveBombingResponseSerializer, SupportiveMessageSerializer
 
 AFFIRMATION_SYSTEM_PROMPT = (
     "You are Moda, a warm caring maternal mental health companion. Write a short "
@@ -108,7 +109,9 @@ class LatestMessageView(RetrieveAPIView):
 
 class LoveBombingView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = LoveBombingResponseSerializer
 
+    @extend_schema(responses=LoveBombingResponseSerializer)
     def get(self, request):
         messages = get_love_bombing_messages(request.user)
         if messages:
@@ -118,7 +121,9 @@ class LoveBombingView(APIView):
 
 class DailyAffirmationView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = DailyAffirmationResponseSerializer
 
+    @extend_schema(responses=DailyAffirmationResponseSerializer)
     def get(self, request):
         today = timezone.localdate()
         affirmation = DailyAffirmation.objects.filter(user=request.user, date=today).first()

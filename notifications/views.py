@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -5,7 +6,7 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 
 from .models import AppNotification
-from .serializers import AppNotificationSerializer
+from .serializers import AppNotificationSerializer, NotificationActionResponseSerializer
 
 
 class NotificationListView(generics.ListAPIView):
@@ -18,7 +19,9 @@ class NotificationListView(generics.ListAPIView):
 
 class NotificationMarkReadView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = NotificationActionResponseSerializer
 
+    @extend_schema(request=None, responses=NotificationActionResponseSerializer)
     def patch(self, request, pk):
         notification = get_object_or_404(AppNotification, pk=pk, user=request.user)
         notification.is_read = True

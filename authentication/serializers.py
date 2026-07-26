@@ -55,6 +55,44 @@ class LoginSerializer(serializers.Serializer):
         }
 
 
+class LoginUserSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    full_name = serializers.CharField()
+    motherhood_stage = serializers.CharField()
+
+
+class LoginResponseSerializer(serializers.Serializer):
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+    user = LoginUserSerializer()
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+
+class FCMTokenSerializer(serializers.Serializer):
+    token = serializers.CharField()
+
+
+class DeleteAccountSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True)
+
+
+class MessageResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()
+
+
+class DetailResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     # multiple contacts now live under /api/contacts/ — exposed here read-only for convenience
     healthcare_contacts = HealthcareContactSerializer(many=True, read_only=True)

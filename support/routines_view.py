@@ -1,17 +1,21 @@
 import random
 
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import DailyRoutine
 from .routines import DAILY_ROUTINES
+from .serializers import DailyRoutineResponseSerializer
 
 
 class DailyRoutineView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = DailyRoutineResponseSerializer
 
+    @extend_schema(responses=DailyRoutineResponseSerializer)
     def get(self, request):
         today = timezone.localdate()
         routine = DailyRoutine.objects.filter(user=request.user, date=today).first()

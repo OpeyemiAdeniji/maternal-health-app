@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'django_apscheduler',
+    'drf_spectacular',
 
     # Our apps
     'authentication',
@@ -115,6 +116,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Modacare API',
+    'DESCRIPTION': 'Maternal mental health companion app API',
+    'VERSION': '1.0.0',
 }
 
 # JWT settings
@@ -155,3 +163,28 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model
 AUTH_USER_MODEL = 'authentication.User'
+
+# Structures every logger.info/warning/exception call already in the codebase (account
+# deletion, SMS/email failures, scheduler startup, etc.) as one JSON object per line on
+# stdout — Datadog's preferred log format, and it picks up the dd.trace_id/dd.span_id
+# fields ddtrace injects (when run via ddtrace-run with DD_LOGS_INJECTION=true) to
+# correlate a log line with the APM trace that produced it.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'datadog_json': {
+            '()': 'core.logging_formatters.DatadogJSONFormatter',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'datadog_json',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}

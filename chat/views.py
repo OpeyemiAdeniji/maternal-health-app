@@ -3,6 +3,7 @@ from datetime import timedelta
 import anthropic
 from django.conf import settings
 from django.utils import timezone
+from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -89,7 +90,9 @@ def build_system_prompt(user):
 
 class ChatView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = ChatInputSerializer
 
+    @extend_schema(request=ChatInputSerializer, responses=ChatMessageSerializer)
     def post(self, request):
         serializer = ChatInputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -116,6 +119,7 @@ class ChatView(APIView):
 
 class ChatHistoryView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = ChatMessageSerializer
 
     def get(self, request):
         messages = ChatMessage.objects.filter(user=request.user).order_by('-created_at')[:20]

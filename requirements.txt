@@ -21,3 +21,5 @@ sendgrid==6.12.5
 gunicorn==23.0.0
 whitenoise==6.11.0
 dj-database-url==3.0.1
+drf-spectacular==0.30.0
+ddtrace==4.11.1

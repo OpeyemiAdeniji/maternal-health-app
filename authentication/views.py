@@ -1,5 +1,6 @@
 import logging
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -9,7 +10,19 @@ from notifications.email import send_password_reset_email, send_welcome_email
 
 from .models import HealthcareContact, User
 from .password_reset import PasswordResetToken, generate_reset_token, validate_reset_token
-from .serializers import HealthcareContactSerializer, RegisterSerializer, LoginSerializer, ProfileSerializer
+from .serializers import (
+    DeleteAccountSerializer,
+    DetailResponseSerializer,
+    FCMTokenSerializer,
+    ForgotPasswordSerializer,
+    HealthcareContactSerializer,
+    LoginResponseSerializer,
+    LoginSerializer,
+    MessageResponseSerializer,
+    ProfileSerializer,
+    RegisterSerializer,
+    ResetPasswordSerializer,
+)
 from .sms import send_safety_net_link
 
 logger = logging.getLogger(__name__)
@@ -34,7 +47,9 @@ class RegisterView(generics.CreateAPIView):
 # view for login
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = LoginSerializer
 
+    @extend_schema(request=LoginSerializer, responses=LoginResponseSerializer)
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -51,7 +66,9 @@ class LoginView(APIView):
 
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = ForgotPasswordSerializer
 
+    @extend_schema(request=ForgotPasswordSerializer, responses=MessageResponseSerializer)
     def post(self, request):
         email = request.data.get('email', '')
         user = User.objects.filter(email=email).first()
@@ -69,7 +86,9 @@ class ForgotPasswordView(APIView):
 
 class ResetPasswordView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = ResetPasswordSerializer
 
+    @extend_schema(request=ResetPasswordSerializer, responses=MessageResponseSerializer)
     def post(self, request):
         token = request.data.get('token', '')
         new_password = request.data.get('new_password', '')
@@ -131,7 +150,9 @@ class HealthcareContactDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class DeleteAccountView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = DeleteAccountSerializer
 
+    @extend_schema(request=DeleteAccountSerializer, responses={204: None})
     def delete(self, request):
         password = request.data.get('password', '')
         if not request.user.check_password(password):
@@ -146,7 +167,9 @@ class DeleteAccountView(APIView):
 
 class SaveFCMTokenView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = FCMTokenSerializer
 
+    @extend_schema(request=FCMTokenSerializer, responses=DetailResponseSerializer)
     def post(self, request):
         token = request.data.get('token', '')
         if not token:
