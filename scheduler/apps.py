@@ -13,11 +13,16 @@ class SchedulerConfig(AppConfig):
     name = 'scheduler'
 
     def ready(self):
-        # only start under `runserver`, and only in the reloaded worker process —
-        # skip for makemigrations/migrate/check/shell/etc, and skip the reloader's
-        # parent watcher process so the scheduler doesn't start twice
-        if 'runserver' not in sys.argv or os.environ.get('RUN_MAIN') != 'true':
-            return
+        # sys.argv is only a manage.py command line for local dev entry points
+        # (runserver, migrate, shell, ...). Under gunicorn/asgi in production,
+        # argv[0] is the server executable, not manage.py, so there's no
+        # subcommand to gate on — always start there.
+        if sys.argv and os.path.basename(sys.argv[0]) == 'manage.py':
+            # only start under `runserver`, and only in the reloaded worker process —
+            # skip for makemigrations/migrate/check/shell/etc, and skip the reloader's
+            # parent watcher process so the scheduler doesn't start twice
+            if 'runserver' not in sys.argv or os.environ.get('RUN_MAIN') != 'true':
+                return
 
         from .jobs import (
             send_daily_affirmations,
