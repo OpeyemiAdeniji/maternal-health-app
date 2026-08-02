@@ -27,7 +27,7 @@ from .sms import send_safety_net_link
 
 logger = logging.getLogger(__name__)
 
-# view for register
+
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
@@ -44,7 +44,7 @@ class RegisterView(generics.CreateAPIView):
 
         return Response({'message': 'Account created successfully.'}, status=status.HTTP_201_CREATED)
 
-# view for login
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
     serializer_class = LoginSerializer
@@ -80,7 +80,7 @@ class ForgotPasswordView(APIView):
             except Exception:
                 logger.exception('Failed to send password reset email to %s', user.email)
 
-        # same response either way — don't reveal whether the email exists
+        # same response either way, don't reveal whether the email exists
         return Response({'message': "If that email exists, we've sent a reset link."})
 
 
@@ -110,11 +110,10 @@ class ResetPasswordView(APIView):
         return Response({'message': 'Password updated successfully.'})
 
 
-# view for profile
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
-    # no DELETE, no list — just the logged-in user's own profile
+    # no DELETE, no list, just the logged-in user's own profile
     http_method_names = ['get', 'put', 'patch', 'head', 'options']
 
     def get_object(self):
@@ -159,8 +158,7 @@ class DeleteAccountView(APIView):
             return Response({'password': ['Incorrect password.']}, status=status.HTTP_400_BAD_REQUEST)
 
         logger.info('Deleting account for user id=%s email=%s', request.user.id, request.user.email)
-        # every related model (HealthcareContact, CheckIn, JournalEntry, EPDSResult, etc.)
-        # is on_delete=CASCADE, so this one call removes all of the user's data
+        # every related model (HealthcareContact, CheckIn, JournalEntry, EPDSResult, etc) is on_delete=CASCADE, so this one call removes all of the user's data
         request.user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

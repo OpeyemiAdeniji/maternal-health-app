@@ -6,8 +6,7 @@ from .love_notes import LoveNote  # noqa: F401
 
 
 class DailyRoutine(models.Model):
-    # persists the routine picked for a user on a given day, so the dashboard
-    # keeps showing the same one all day instead of a new random pick per request
+    # persists the routine picked for a user on a given day, so the dashboard shows the same one all day instead of a new random pick per request
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='daily_routines')
     routine_title = models.CharField(max_length=255)
     routine_description = models.TextField()

@@ -1,7 +1,6 @@
 import { login, getCheckins, getJournal, getLearn } from './lib/api.js';
 
-// Smoke test: read-only correctness check. Confirms the seeded test account
-// can log in and every GET endpoint responds 200 — not a performance test.
+// smoke test, confirms the seeded test account can log in and every GET endpoint responds 200, not a performance test
 export const options = {
   vus: 1,
   iterations: 3,

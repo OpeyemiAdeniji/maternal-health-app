@@ -56,7 +56,7 @@ function tagButtonClass(selected) {
   }`;
 }
 
-// shared bottom-sheet chrome — same convention as Dashboard's LoveNoteModal
+// shared bottom-sheet chrome, same convention as Dashboard's LoveNoteModal
 function Sheet({ children }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-8 pt-16 sm:items-center">
@@ -182,8 +182,7 @@ export default function Journal() {
       setDeleteTargetId(null);
       setShowDeleteSuccess(true);
     } catch {
-      // leave the card and the confirmation sheet in place so the user can see
-      // what happened and retry, instead of it just silently closing
+      // leave the card and sheet in place so the user can see what happened and retry
       setDeleteError("We couldn't delete this entry. Please try again.");
     } finally {
       setDeleteSubmitting(false);

@@ -94,7 +94,7 @@ class DetailResponseSerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    # multiple contacts now live under /api/contacts/ — exposed here read-only for convenience
+    # multiple contacts now live under /api/contacts/, exposed here read-only for convenience
     healthcare_contacts = HealthcareContactSerializer(many=True, read_only=True)
     # true if any LearnTopic for the user's stage was created after their last Learn visit
     has_new_learn_content = serializers.SerializerMethodField()
@@ -127,7 +127,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ['email', 'created_at', 'has_new_learn_content']
 
     def get_has_new_learn_content(self, obj):
-        # never visited — everything is "new" to them
+        # never visited, everything is new to them
         if obj.last_visited_learn_at is None:
             return True
         return LearnTopic.objects.filter(

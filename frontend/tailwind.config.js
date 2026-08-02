@@ -20,7 +20,7 @@ export default {
         ink: '#2d2d2d', // primary text
         muted: '#737373', // secondary text
         accent: '#FBE0F8',
-        // named brand tokens — same colours as the primary scale, kept for the Auth/SafetyNet pages
+        // named brand tokens, same colours as the primary scale, kept for the Auth/SafetyNet pages
         brand: '#b00fa8',
         'text-primary': '#2d2d2d',
         'text-secondary': '#737373',

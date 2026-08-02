@@ -29,7 +29,7 @@ export default function Exploring() {
     setSubmitting(true);
     try {
       const stageReason = [broughtHere, supporting].filter(Boolean).join(' — ');
-      // exploring-stage users skip Safety Net entirely — this is the final onboarding step for them
+      // exploring-stage users skip Safety Net entirely, this is the final onboarding step for them
       await api.patch('/api/auth/profile/', { stage_reason: stageReason, onboarding_complete: true });
       navigate('/dashboard');
     } catch {

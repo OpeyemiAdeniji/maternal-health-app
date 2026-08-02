@@ -377,8 +377,7 @@ export default function Profile() {
     setExpandedAccountField((prev) => (prev === field ? null : field));
   };
 
-  // saves just the given field(s) from accountForm — PATCH so untouched fields
-  // (including required ones like full_name) are never at risk of being wiped out
+  // saves just the given field(s), a PATCH so untouched fields like full_name are never at risk of being wiped out
   const saveField = async (fieldNames) => {
     setAccountError('');
     setAccountSaving(true);
@@ -466,7 +465,7 @@ export default function Profile() {
     setNotificationsSaving(true);
 
     if (next) {
-      // best-effort — a denied browser permission shouldn't block saving the preference
+      // best effort, a denied browser permission shouldn't block saving the preference
       await requestNotificationPermission();
     }
 

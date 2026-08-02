@@ -14,9 +14,7 @@ class CheckInSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'date', 'created_at', 'supportive_message']
 
     def get_supportive_message(self, obj):
-        # only set on the instance we just created (see create() below) — a plain
-        # queryset fetch (list/retrieve) won't have this, so history views don't pay
-        # for the lookup or get a re-rolled message on every read
+        # only set on the instance we just created in create() below, so history views don't pay for the lookup or get a re-rolled message on every read
         message_text = getattr(obj, '_supportive_message_text', None)
         return {'message_text': message_text} if message_text else None
 
@@ -31,7 +29,7 @@ class CheckInSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        # inject user and today's date — not coming from the request body
+        # inject user and today's date, not coming from the request body
         validated_data['user'] = self.context['request'].user
         validated_data['date'] = timezone.localdate()
         checkin = super().create(validated_data)

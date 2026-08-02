@@ -71,8 +71,7 @@ SUPPORT_RESOURCES = {
     ],
 }
 
-# reading tailored to the user's motherhood stage — every URL below was checked
-# and confirmed live before this was added; verify again before going live
+# reading tailored to the user's motherhood stage, every URL below was checked before this was added, verify again before going live
 STAGE_RESOURCES = {
     'pregnant': [
         {

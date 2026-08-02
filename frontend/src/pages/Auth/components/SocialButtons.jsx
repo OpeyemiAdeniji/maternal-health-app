@@ -1,6 +1,6 @@
 import { AppleIcon, GoogleIcon } from '../../../components/common/icons';
 
-// icon-only social buttons — OAuth isn't wired up yet, these are visual placeholders
+// icon-only social buttons, OAuth isn't wired up yet, these are visual placeholders
 export default function SocialButtons() {
   return (
     <div className="flex gap-4">

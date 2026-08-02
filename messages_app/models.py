@@ -17,7 +17,7 @@ class SupportiveMessage(models.Model):
 
 
 class DailyAffirmation(models.Model):
-    # one affirmation per user per day — keeps the dashboard card stable all day
+    # one affirmation per user per day, keeps the dashboard card stable all day
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='daily_affirmations')
     message_text = models.TextField()
     date = models.DateField(auto_now_add=True)

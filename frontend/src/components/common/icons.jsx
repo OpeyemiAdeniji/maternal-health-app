@@ -1,4 +1,4 @@
-// small, dependency-free outline icon set — stroke inherits currentColor so parents control color
+// small, dependency-free outline icon set, stroke inherits currentColor so parents control color
 
 function Icon({ children, className = 'h-5 w-5' }) {
   return (

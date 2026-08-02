@@ -13,8 +13,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // surfaces the reason if we were just bounced here by an expired session,
-  // then clears it so it doesn't reappear on a later, unrelated visit
+  // shows the expired-session reason once, then clears it so it doesn't reappear on a later visit
   useEffect(() => {
     if (sessionExpiredMessage) {
       setError(sessionExpiredMessage);
@@ -32,9 +31,7 @@ export default function Login() {
       await login(form.email, form.password);
       navigate('/dashboard');
     } catch (err) {
-      // err.response only exists if the server actually responded — no response at
-      // all means the request never got there (offline, server down, timed out),
-      // which isn't the same problem as a genuinely wrong email/password
+      // err.response only exists if the server responded, no response means the request never got there, which is different from a wrong password
       if (err.response) {
         setError('Invalid email or password.');
       } else {

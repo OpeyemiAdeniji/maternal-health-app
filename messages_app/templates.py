@@ -28,8 +28,7 @@ MESSAGE_TEMPLATES = {
         "It's lovely to hear you're having a good day. Enjoy it!",
         "So glad today feels good. Keep doing what's working for you.",
     ],
-    # keyed by motherhood_stage — see messages_app/selector.py::get_daily_affirmation_message
-    # for how 'seasoned' and 'exploring' fall back when there's nothing stage-specific to say
+    # keyed by motherhood_stage, see selector.py::get_daily_affirmation_message for how seasoned/exploring fall back
     'daily_affirmation': {
         'pregnant': [
             "Your body is doing something incredible. One day at a time.",

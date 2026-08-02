@@ -41,7 +41,7 @@ export default function useSpeechRecognition() {
     };
 
     recognition.onerror = (event) => {
-      // en-IE isn't available on every device — retry once with en-US before giving up
+      // en-IE isn't available on every device, retry once with en-US before giving up
       if (event.error === 'language-not-supported' && langRef.current === 'en-IE') {
         langRef.current = 'en-US';
         try {

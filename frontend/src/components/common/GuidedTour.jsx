@@ -3,9 +3,7 @@ import { useEffect, useState } from 'react';
 const SPOTLIGHT_PADDING = 8;
 const CAPTION_WIDTH = 280;
 
-// picks whichever matching element is actually rendered/visible — Header/Sidebar/Footer
-// carry the same data-tour-target key on both their mobile and desktop variants, only
-// one of which is ever visible at a time (the other is display:none via Tailwind's lg: )
+// Header/Sidebar/Footer carry the same data-tour-target key on both mobile and desktop variants, only one is visible at a time, so pick whichever one actually renders
 function getVisibleTourTarget(key) {
   const candidates = document.querySelectorAll(`[data-tour-target="${key}"]`);
   for (const el of candidates) {
@@ -25,8 +23,7 @@ export default function GuidedTour({ steps, onFinish }) {
   useEffect(() => {
     const target = getVisibleTourTarget(step.key);
     if (!target) {
-      // nothing to highlight on this viewport (shouldn't normally happen) — move on rather
-      // than leaving the user stuck on a step that can't render anything
+      // nothing to highlight on this viewport, so move on rather than stalling on a step that can't render
       if (isLast) {
         onFinish();
       } else {
@@ -39,7 +36,7 @@ export default function GuidedTour({ steps, onFinish }) {
 
     const updateRect = () => setRect(target.getBoundingClientRect());
     updateRect();
-    // scrollIntoView animates — the rect settles a moment after the initial read
+    // scrollIntoView animates, so the rect settles a moment after the initial read
     const settleTimer = setTimeout(updateRect, 350);
 
     window.addEventListener('resize', updateRect);

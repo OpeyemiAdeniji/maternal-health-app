@@ -2,7 +2,13 @@ import { ArrowLeft2, Heart } from 'iconsax-react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../../components/common/Logo';
 
-const BUILT_WITH = ['Django REST Framework', 'React PWA', 'PostgreSQL on Supabase', 'Firebase Cloud Messaging'];
+const HOW_IT_HELPS = [
+  'Daily mood and sleep check-ins, so patterns are easier to notice before they feel overwhelming',
+  "A private journal, a space that's just yours, for whatever you need to put into words",
+  'A gentle chat companion, there to talk things through whenever you need it',
+  "Regular wellbeing check-ins (EPDS), so changes in how you're feeling don't go unnoticed",
+  'A Safety Net that quietly keeps the people who care about you in the loop, without you having to be the one to reach out',
+];
 
 export default function About() {
   const navigate = useNavigate();
@@ -23,22 +29,34 @@ export default function About() {
       <div className="flex-1 space-y-8 px-4 py-8">
         <div className="flex flex-col items-center text-center">
           <Logo size="lg" />
-          <p className="mt-2 text-sm font-medium text-muted">Your maternal wellbeing companion</p>
+          <p className="mt-2 text-sm font-medium text-muted">
+            Your companion through pregnancy, motherhood, and beyond
+          </p>
           <p className="mt-1 text-xs text-muted">Version 1.0.0</p>
         </div>
 
         <p className="text-sm leading-relaxed text-ink">
-          Modacare is a maternal mental health companion app designed to support pregnant and
-          postpartum women with daily mood tracking, journaling, EPDS screening, pattern analysis,
-          and personalised wellbeing insights.
+          Motherhood doesn't happen in one moment, it's a journey that stretches from the earliest
+          weeks of pregnancy, through the newborn haze, and into all the years that follow. Modacare
+          walks alongside you through that whole journey, giving you a private, caring space to
+          check in with yourself, whenever you need it.
         </p>
 
         <section>
-          <h2 className="text-base font-semibold text-ink">Built with care</h2>
+          <h2 className="text-base font-semibold text-ink">Who it's for</h2>
+          <p className="mt-2 text-sm leading-relaxed text-muted">
+            Whether you're newly pregnant, adjusting to life with a new baby, further down the road
+            as a seasoned mother, or simply someone who loves and supports a mother through it all,
+            Modacare is built for you.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-base font-semibold text-ink">How Modacare helps</h2>
           <ul className="mt-2 space-y-1.5 text-sm text-muted">
-            {BUILT_WITH.map((item) => (
-              <li key={item} className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary-300" />
+            {HOW_IT_HELPS.map((item) => (
+              <li key={item} className="flex items-start gap-2">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary-300" />
                 {item}
               </li>
             ))}

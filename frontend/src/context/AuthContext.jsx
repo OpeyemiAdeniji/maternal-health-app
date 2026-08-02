@@ -25,7 +25,7 @@ export function AuthProvider({ children }) {
     setUser(data.user);
     setIsAuthenticated(true);
 
-    // fire and forget — prompts for permission and saves the token if granted
+    // fire and forget, prompts for permission and saves the token if granted
     requestNotificationPermission();
 
     return data.user;
@@ -49,9 +49,7 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(false);
   };
 
-  // merges fresh fields (e.g. from a /api/auth/profile/ fetch) into the cached user
-  // object — login only ever returns a minimal user, so screens that need up-to-date
-  // fields (motherhood_stage, etc.) should pull them and sync them back here
+  // login only returns a minimal user, so screens that fetch fuller fields (like motherhood_stage) sync them back through here
   const updateUser = (patch) => {
     setUser((prev) => {
       const next = { ...prev, ...patch };
@@ -67,9 +65,7 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('storage', syncFromStorage);
   }, []);
 
-  // an expired/invalid token makes any authenticated request 401 — this is what
-  // actually logs the user out and surfaces a clear reason, instead of the request
-  // just silently failing on whatever page they happened to be on
+  // catches a 401 from any authenticated request so we log out with a clear reason instead of failing silently
   useEffect(() => {
     setSessionExpiredHandler(() => {
       logout();

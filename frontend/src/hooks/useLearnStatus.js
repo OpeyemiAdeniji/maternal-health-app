@@ -21,9 +21,7 @@ export default function useLearnStatus() {
       .catch(() => {});
   }, []);
 
-  // Header/Sidebar persist across client-side route changes, so once the user is on
-  // /learn, clear the indicators immediately instead of waiting for a full reload —
-  // the Learn page's own mount effect handles persisting this to the backend.
+  // Header/Sidebar persist across route changes, so clear the indicators as soon as the user hits /learn instead of waiting for the page's own mount effect to persist it to the backend
   useEffect(() => {
     if (location.pathname.startsWith('/learn')) {
       setHasNewContent(false);
@@ -36,8 +34,7 @@ export default function useLearnStatus() {
     api.patch('/api/auth/profile/', { learn_coachmark_dismissed: true }).catch(() => {});
   };
 
-  // suppressed while the EPDS prompt or guided tour is open so nothing competes for
-  // attention — this only hides it, it doesn't mark it as seen, so it can still appear after
+  // hidden while the EPDS prompt or guided tour is open, this only hides it and doesn't mark it seen, so it can still show up after
   return {
     hasNewContent,
     showCoachmark: showCoachmark && !isEpdsPromptOpen && !isTourActive,

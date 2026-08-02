@@ -71,30 +71,28 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=MotherhoodStage.POSTPARTUM,
         blank=True,
     )
-    # set once the user finishes the full onboarding flow (stage questions + Safety Net) —
-    # gates access to the Dashboard and other protected screens until then
+    # set once the user finishes the full onboarding flow (stage questions plus Safety Net), and gates access to Dashboard and other protected screens until then
     onboarding_complete = models.BooleanField(default=False)
-    # onboarding follow-up details — only some apply, depending on motherhood_stage
+    # onboarding follow-up details, only some apply depending on motherhood_stage
     pregnancy_week = models.IntegerField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
     baby_age_months = models.IntegerField(null=True, blank=True)
     feeding_method = models.CharField(max_length=100, blank=True, default='')
     stage_reason = models.CharField(max_length=200, blank=True, default='')
-    # seasoned-mother-specific follow-up details — all optional, same as the other stages'
+    # seasoned-mother-specific follow-up details, all optional like the other stages'
     marital_status = models.CharField(max_length=20, choices=MaritalStatus.choices, blank=True, default='')
     number_of_children = models.PositiveIntegerField(null=True, blank=True)
     employment_status = models.CharField(max_length=20, choices=EmploymentStatus.choices, blank=True, default='')
-    # device push token for FCM — blank until the user grants notification permission
+    # device push token for FCM, blank until the user grants notification permission
     fcm_token = models.TextField(blank=True, default='')
     notifications_enabled = models.BooleanField(default=True)
-    # last time the user dismissed the post-registration EPDS nudge — null until dismissed once
+    # last time the user dismissed the post-registration EPDS nudge, null until dismissed once
     epds_prompt_dismissed_at = models.DateTimeField(null=True, blank=True)
-    # last time the user actually opened the Learn page — null until their first visit
+    # last time the user actually opened the Learn page, null until their first visit
     last_visited_learn_at = models.DateTimeField(null=True, blank=True)
     # separate from last_visited_learn_at: tracks the one-time Learn coach-mark, not page visits
     learn_coachmark_dismissed = models.BooleanField(default=False)
-    # de-dup guard for the love-bombing personal-contact SMS — null until the first alert is
-    # ever sent; prevents re-sending every day a low-mood streak continues
+    # de-dup guard for the love-bombing contact SMS, null until first sent, so it does not resend every day during a long streak
     last_love_bombing_contact_alert_at = models.DateTimeField(null=True, blank=True)
     # tracks the one-time guided tour shown to exploring-stage users on their first Dashboard visit
     exploring_tour_completed = models.BooleanField(default=False)
@@ -112,7 +110,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 
 class HealthcareContact(models.Model):
-    # a user's "Safety Net" — can have several: partner, friends, family, GP, midwife
+    # a user's Safety Net, can have several: partner, friends, family, GP, midwife
     class Relationship(models.TextChoices):
         PARTNER = 'partner', 'Partner'
         FRIEND = 'friend', 'Best Friend'
@@ -132,7 +130,7 @@ class HealthcareContact(models.Model):
         choices=Relationship.choices,
         default=Relationship.PARTNER,
     )
-    # powers this contact's private safety-net link — never exposed except as part of that URL
+    # powers this contact's private safety net link, never exposed except as part of that URL
     unique_token = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

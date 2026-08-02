@@ -44,7 +44,7 @@ export async function requestNotificationPermission() {
     await api.post('/api/auth/fcm-token/', { token });
     return token;
   } catch {
-    // permission was granted but getting/saving the token failed — not fatal
+    // permission was granted but getting or saving the token failed, not fatal
     return null;
   }
 }
