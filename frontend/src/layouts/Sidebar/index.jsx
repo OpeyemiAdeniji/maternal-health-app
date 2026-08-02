@@ -44,7 +44,7 @@ export default function Sidebar({ userName }) {
   };
 
   return (
-    <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:h-screen lg:w-60 lg:flex-col lg:border-r lg:border-gray-100 lg:bg-white">
+    <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:h-screen lg:w-72 lg:flex-col lg:border-r lg:border-gray-100 lg:bg-white">
       <div className="flex items-center justify-between px-6 py-6">
         <Logo size="md" />
         <div className="flex items-center gap-2">
