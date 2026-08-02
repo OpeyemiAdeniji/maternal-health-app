@@ -22,8 +22,7 @@ from support.routines import DAILY_ROUTINES
 
 from .scheduler import scheduler
 
-# how long an ongoing (never-reset) streak can go between contact alerts, so a very
-# long stretch still checks back in periodically instead of alerting only once ever
+# how long an ongoing streak can go between contact alerts, so a very long stretch still checks back in periodically
 LOVE_BOMBING_CONTACT_ALERT_COOLDOWN_DAYS = 7
 
 
@@ -64,7 +63,7 @@ def send_daily_routines():
 
 
 def _notify_personal_contacts_if_due(user, now):
-    # only Partner/Friend/Family — GP/Midwife are clinical contacts and never get this
+    # only Partner/Friend/Family, GP/Midwife are clinical contacts and never get this
     streak_start = get_love_bombing_streak_start(user)
     if streak_start is None:
         return
@@ -81,7 +80,7 @@ def _notify_personal_contacts_if_due(user, now):
         user=user, relationship_type__in=PERSONAL_RELATIONSHIPS
     )
     if not personal_contacts.exists():
-        return  # nothing to do — the user still gets their own push notification above
+        return  # nothing to do, the user still gets their own push notification above
 
     for contact in personal_contacts:
         send_love_bombing_contact_alert(
@@ -127,8 +126,7 @@ def _week_bounds(reference_date):
 
 
 def _average_mood(user, start, end):
-    # one representative score per day (the most recent check-in of that day), not one per row,
-    # so a day with multiple check-ins doesn't get over-weighted in the average
+    # one score per day (the most recent check-in), not one per row, so multiple check-ins in a day don't skew the average
     checkins = CheckIn.objects.filter(user=user, date__gte=start, date__lte=end)
     daily_mood = {}
     for c in checkins:

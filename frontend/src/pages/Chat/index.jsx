@@ -120,8 +120,7 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, sending]);
 
-  // shared by the initial send and a retry — keyed by localId so a retry updates
-  // the same bubble in place instead of adding a duplicate
+  // shared by the initial send and a retry, keyed by localId so a retry updates the same bubble instead of adding a duplicate
   const sendMessage = async (content, localId) => {
     setError('');
     setSending(true);

@@ -20,7 +20,6 @@ class JournalEntrySerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        # bridges pre-multi-tag entries into the same list shape as new ones, so the
-        # frontend never has to special-case an entry created before this field existed
+        # bridges pre-multi-tag entries into the same list shape as new ones, so the frontend never has to special-case old entries
         data['mood_tags'] = instance.effective_mood_tags
         return data

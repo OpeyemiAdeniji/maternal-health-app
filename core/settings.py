@@ -2,7 +2,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-# Load environment variables from .env file
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,8 +11,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
 # defaults to False so a missing/misconfigured DEBUG env var fails safe in production
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# comma-separated list from the env, e.g. "myapp.onrender.com,api.modacare.com";
-# .onrender.com (leading dot) matches any Render subdomain, per Django's ALLOWED_HOSTS syntax
+# ALLOWED_HOSTS is a comma separated list from the env, and the leading dot on .onrender.com below matches any Render subdomain
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
@@ -86,9 +84,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# Database - PostgreSQL on Supabase
-# Prefer a single DATABASE_URL (the connection string Supabase/Render both surface
-# directly) when set; otherwise fall back to the discrete DATABASE_* vars below.
+# Prefer a single DATABASE_URL, the connection string Supabase and Render both provide, and fall back to the discrete DATABASE_* vars when it's not set
 import dj_database_url
 
 DATABASE_URL = os.getenv('DATABASE_URL')
@@ -132,8 +128,7 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
-# CORS settings - the frontend (Vercel) is on a different domain in production,
-# so origins are read from an env var rather than hardcoded here.
+# CORS origins come from an env var since the frontend runs on a different Vercel domain in production
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(',')
@@ -161,14 +156,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Custom user model
 AUTH_USER_MODEL = 'authentication.User'
 
-# Structures every logger.info/warning/exception call already in the codebase (account
-# deletion, SMS/email failures, scheduler startup, etc.) as one JSON object per line on
-# stdout — Datadog's preferred log format, and it picks up the dd.trace_id/dd.span_id
-# fields ddtrace injects (when run via ddtrace-run with DD_LOGS_INJECTION=true) to
-# correlate a log line with the APM trace that produced it.
+# JSON logging so Datadog can parse each line and match it to the right APM trace via dd.trace_id/dd.span_id
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

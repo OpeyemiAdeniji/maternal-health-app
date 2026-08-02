@@ -26,9 +26,7 @@ AFFIRMATION_SYSTEM_PROMPT = (
 
 
 def _weekly_mood(user):
-    # last 7 days including today, one representative score per day (the most recent check-in of
-    # that day) rather than one per row — otherwise a day with several check-ins would skew both
-    # the average and the recent-vs-earlier trend split
+    # last 7 days including today, one score per day (the most recent check-in), so multiple check-ins in a day don't skew the average or the trend split
     since = timezone.localdate() - timedelta(days=6)
     checkins = CheckIn.objects.filter(user=user, date__gte=since).order_by('-date', '-created_at')
 

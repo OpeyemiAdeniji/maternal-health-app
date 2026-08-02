@@ -21,7 +21,7 @@ class JournalEntry(models.Model):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='journal_entries')
     body_text = models.TextField()
-    # legacy single-tag field — no longer written to by new code, kept so old entries keep their data
+    # legacy single-tag field, no longer written to by new code, kept so old entries keep their data
     mood_tag = models.CharField(max_length=20, choices=MOOD_CHOICES, blank=True, default='')
     # current format: a list of tag values, validated against MOOD_CHOICES by the serializer
     mood_tags = models.JSONField(default=list, blank=True)
@@ -36,8 +36,7 @@ class JournalEntry(models.Model):
 
     @property
     def effective_mood_tags(self):
-        # bridges pre-multi-tag entries (only mood_tag set) into the same list shape as
-        # new entries, so every consumer can treat mood_tags uniformly regardless of age
+        # bridges pre-multi-tag entries (only mood_tag set) into the same list shape as new entries, so every consumer can treat mood_tags uniformly
         if self.mood_tags:
             return self.mood_tags
         return [self.mood_tag] if self.mood_tag else []

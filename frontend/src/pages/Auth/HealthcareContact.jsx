@@ -37,8 +37,7 @@ export default function HealthcareContact() {
 
   const addContact = () => setContacts((prev) => [...prev, blankContact()]);
 
-  // Safety Net is the last onboarding step — this is what actually marks onboarding
-  // complete, whether the user saved contacts or skipped this step entirely
+  // Safety Net is the last onboarding step, this marks onboarding complete whether or not the user saved contacts
   const finishOnboarding = async () => {
     await api.patch('/api/auth/profile/', { onboarding_complete: true });
     navigate('/dashboard');

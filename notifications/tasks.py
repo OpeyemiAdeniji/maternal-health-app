@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def send_push_notification(user, title, body, notification_type=AppNotification.NotificationType.AFFIRMATION):
-    # every push also lands in the in-app notification centre, regardless of
-    # whether the device has a push token or the send below succeeds
+    # every push also lands in the in-app notification centre, regardless of whether the device has a push token or the send below succeeds
     AppNotification.objects.create(user=user, title=title, message=body, notification_type=notification_type)
 
     if not user.fcm_token:
@@ -27,7 +26,7 @@ def send_push_notification(user, title, body, notification_type=AppNotification.
         )
         messaging.send(message)
     except Exception:
-        # push failures shouldn't ever break the caller — just log and move on
+        # push failures shouldn't ever break the caller, just log and move on
         logger.exception('Failed to send push notification to %s', user.email)
 
 
@@ -45,8 +44,6 @@ def send_love_bombing_notifications():
         if not messages:
             continue
 
-        # in production, spacing these across the day means scheduling this job
-        # (e.g. via cron/Celery beat) to run once and send all three at intervals,
-        # or splitting it into three scheduled runs — kept simple here
+        # in production this would be spaced across the day via a scheduled job, kept simple here
         for message in messages:
             send_push_notification(user, 'We see you', message, AppNotification.NotificationType.MOOD_ALERT)

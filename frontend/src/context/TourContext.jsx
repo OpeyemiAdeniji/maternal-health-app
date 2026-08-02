@@ -1,8 +1,6 @@
 import { createContext, useState } from 'react';
 
-// lets sibling components under Main (Header/Sidebar's Learn coach-mark) know when the
-// guided tour is active, so they can avoid showing competing UI at the same time —
-// mirrors EpdsPromptContext for the same reason (Header/Sidebar aren't a child of Dashboard)
+// lets Header/Sidebar know the guided tour is active so they don't show competing UI, since they aren't children of Dashboard and can't take this as a prop
 export const TourContext = createContext({
   isTourActive: false,
   setIsTourActive: () => {},

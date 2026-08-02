@@ -80,7 +80,7 @@ def _current_streak(user):
 
 
 class PublicContactView(APIView):
-    # accessed via a contact's private link — no login, identified entirely by the token
+    # accessed via a contact's private link, no login, identified entirely by the token
     permission_classes = [AllowAny]
     serializer_class = ClinicalContactViewSerializer
 

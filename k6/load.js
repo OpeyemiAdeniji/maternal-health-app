@@ -1,9 +1,7 @@
 import { sleep } from 'k6';
 import { login, getCheckins, getJournal, getLearn } from './lib/api.js';
 
-// Load test: performance under expected traffic. Ramps to 10 concurrent
-// users, holds, then ramps down, exercising the same read-only login + GET
-// flow as the smoke test but under sustained concurrency.
+// load test: ramps to 10 concurrent users, holds, then ramps down, using the same read-only flow as the smoke test but under sustained concurrency
 export const options = {
   stages: [
     { duration: '10s', target: 10 },

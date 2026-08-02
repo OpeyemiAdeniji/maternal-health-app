@@ -92,8 +92,7 @@ function checkInStreak(checkins) {
   return streak;
 }
 
-// what matters for this chip is TODAY specifically, not the historical streak count —
-// a user with a long history who simply hasn't checked in today is not "never checked in"
+// this chip cares about TODAY specifically, a long streak that just missed today still counts as checked in before
 function streakChipLabel(checkins, streak, todayCheckIn) {
   if (checkins.length === 0) return 'No check-ins yet';
   if (!todayCheckIn) return 'Not checked in today';
@@ -256,8 +255,7 @@ export default function Dashboard() {
       .get('/api/auth/profile/')
       .then(({ data }) => {
         setEpdsPromptDismissedAt(data.epds_prompt_dismissed_at);
-        // login only ever returns a minimal user — sync the full profile back into
-        // AuthContext so stageBadgeLabel() (and anything else reading `user`) is current
+        // login only returns a minimal user, sync the full profile into AuthContext so stageBadgeLabel() and anything else reading `user` is current
         updateUser(data);
         if (data.motherhood_stage === 'exploring' && !data.exploring_tour_completed) {
           setTourActive(true);
@@ -267,9 +265,7 @@ export default function Dashboard() {
       .finally(() => setProfileLoaded(true));
   }, []);
 
-  // post-registration nudge: only for users who've never completed an assessment,
-  // shown a few seconds after the dashboard loads, at most once a day — held off entirely
-  // while the guided tour is active so a brand-new exploring user isn't shown both at once
+  // post-registration nudge for users who've never completed an assessment, shown a few seconds after load, at most once a day, held off while the guided tour is active
   useEffect(() => {
     if (!epdsResultsLoaded || !profileLoaded || epdsLastResult || tourActive) return;
 
@@ -282,14 +278,12 @@ export default function Dashboard() {
     return () => clearTimeout(timer);
   }, [epdsResultsLoaded, profileLoaded, epdsLastResult, epdsPromptDismissedAt, tourActive]);
 
-  // let Header/Sidebar know this modal is open so they can suppress the Learn
-  // coach-mark for as long as it's up, without permanently marking it seen
+  // lets Header/Sidebar suppress the Learn coach-mark while this modal is open, without marking it seen
   useEffect(() => {
     setIsEpdsPromptOpen(showEpdsPrompt);
   }, [showEpdsPrompt, setIsEpdsPromptOpen]);
 
-  // same idea for the guided tour — it and the Learn coach-mark can both become
-  // eligible on a brand-new exploring user's very first Dashboard visit
+  // same idea for the guided tour, both it and the Learn coach-mark can become eligible on a brand-new user's first Dashboard visit
   useEffect(() => {
     setIsTourActive(tourActive);
   }, [tourActive, setIsTourActive]);

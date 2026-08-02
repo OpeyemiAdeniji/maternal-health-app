@@ -39,7 +39,7 @@ export default function Result() {
   const score = location.state?.score;
 
   useEffect(() => {
-    // no score to show — this screen only makes sense right after a submission
+    // no score to show, this screen only makes sense right after a submission
     if (score === undefined) {
       navigate('/dashboard', { replace: true });
     }

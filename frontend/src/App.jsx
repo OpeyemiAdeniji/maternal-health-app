@@ -38,14 +38,13 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* public — opened from a Safety Net contact's own link, no login involved */}
+          {/* public, opened from a Safety Net contact's own link, no login involved */}
           <Route path={ROUTES.SAFETY_NET} element={<SafetyNet />} />
 
-          {/* public — reachable whether or not the user is logged in */}
+          {/* public, reachable whether or not the user is logged in */}
           <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword />} />
           <Route path={ROUTES.RESET_PASSWORD} element={<ResetPassword />} />
-          {/* public so a prospective user can read it from the Register screen before
-              creating an account — was previously stuck behind login + onboarding */}
+          {/* public so a prospective user can read it from the Register screen before creating an account */}
           <Route path={ROUTES.PRIVACY} element={<Privacy />} />
 
           <Route element={<ProtectedRoute />}>
@@ -54,8 +53,7 @@ function App() {
             <Route path={ROUTES.REGISTER} element={<Register />} />
           </Route>
 
-          {/* onboarding steps run right after registration, while already authenticated:
-              Register -> MotherhoodStage -> stage-specific follow-up -> HealthcareContact (Safety Net) -> Dashboard */}
+          {/* onboarding runs right after registration: Register -> MotherhoodStage -> stage follow-up -> HealthcareContact -> Dashboard */}
           <Route element={<PrivateRoute />}>
             <Route path={ROUTES.MOTHERHOOD_STAGE} element={<MotherhoodStage />} />
             <Route path={ROUTES.PREGNANT_FOLLOW_UP} element={<PregnantFollowUp />} />
@@ -64,8 +62,7 @@ function App() {
             <Route path={ROUTES.EXPLORING} element={<Exploring />} />
             <Route path={ROUTES.HEALTHCARE_CONTACT} element={<HealthcareContact />} />
 
-            {/* bounces a user with onboarding_complete=false back into the onboarding
-                flow — covers back-button navigation, direct URL entry, stale tabs, etc. */}
+            {/* sends a user with onboarding_complete=false back into onboarding, covers back-button nav, direct URL entry, and stale tabs */}
             <Route element={<OnboardingRoute />}>
               <Route element={<Main />}>
                 <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />

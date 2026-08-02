@@ -18,8 +18,7 @@ def get_message(category):
 
 def get_message_for_checkin(checkin):
     if checkin.mood_score <= 2:
-        # one representative score per day (the most recent check-in of that day) — otherwise a
-        # single day with several low check-ins could double-count toward "sustained" low mood
+        # one score per day (the most recent check-in), so a single day with several low check-ins does not double count toward sustained low mood
         recent_checkins = CheckIn.objects.filter(
             user=checkin.user, date__lte=checkin.date
         ).order_by('-date', '-created_at')[:100]
@@ -60,9 +59,7 @@ def get_daily_affirmation_category(user):
 
 def get_daily_affirmation_message(user):
     category = get_daily_affirmation_category(user)
-    # only the plain 'daily_affirmation' category (no check-in logged yet today) varies by
-    # stage — the mood-reaction categories (low_mood_checkin/after_journal/positive_checkin)
-    # stay stage-agnostic, same as before
+    # only the plain daily_affirmation category varies by stage, the mood reaction categories stay the same for everyone
     if category != 'daily_affirmation':
         return get_message(category)
 
@@ -72,9 +69,7 @@ def get_daily_affirmation_message(user):
 
 
 def _consecutive_low_mood_run(user):
-    # one representative score per day (the most recent check-in of that day). Without this, a
-    # duplicate check-in on the same day breaks the consecutive-day walk below (its date no longer
-    # matches the already-decremented expected_date), silently zeroing out a real streak.
+    # one score per day (the most recent check-in), otherwise a duplicate same-day check-in breaks the streak walk below and silently zeroes out a real streak
     checkins = CheckIn.objects.filter(user=user).order_by('-date', '-created_at')[:100]
     daily_mood = {}
     for c in checkins:
@@ -108,8 +103,7 @@ def get_love_bombing_messages(user):
 
 
 def get_love_bombing_streak_start(user):
-    # start date of the current qualifying low-mood streak, or None if not triggered —
-    # lets a caller tell a fresh streak apart from one it already alerted on
+    # start date of the current qualifying low-mood streak, or None if not triggered, so a caller can tell a fresh streak apart from one already alerted on
     consecutive_low, streak_start_date = _consecutive_low_mood_run(user)
     if consecutive_low >= LOVE_BOMBING_MIN_CONSECUTIVE_DAYS:
         return streak_start_date

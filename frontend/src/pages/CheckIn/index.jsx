@@ -131,14 +131,14 @@ export default function CheckIn() {
         trigger_note: triggerNote,
       });
 
-      // the checkin response doesn't always carry a message — fall back to the latest one
+      // the checkin response doesn't always carry a message, fall back to the latest one
       let message = data.supportive_message?.message_text;
       if (!message) {
         try {
           const latest = await api.get('/api/messages/latest/');
           message = latest.data.message_text;
         } catch {
-          // no supportive message available yet — that's fine
+          // no supportive message available yet, that's fine
         }
       }
       setSupportiveMessage(message || 'Thanks for checking in today.');

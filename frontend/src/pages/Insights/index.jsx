@@ -19,9 +19,7 @@ function formatShortDate(dateKey) {
 
 function last30DaysCheckins(checkins) {
   const cutoff = toDateKey(new Date(Date.now() - 30 * 86400000));
-  // one representative entry per day (the most recent check-in of that day) — checkins arrive
-  // newest-first from the API, so the first occurrence per date is the one to keep. Otherwise a
-  // day with several check-ins would show as duplicate bars and skew the 30-day average below.
+  // checkins arrive newest-first, so keep only the first occurrence per date, otherwise a day with several check-ins would show as duplicate bars and skew the average
   const mostRecentByDate = new Map();
   for (const c of checkins) {
     if (c.date >= cutoff && !mostRecentByDate.has(c.date)) {
@@ -72,8 +70,7 @@ function EmptyState({ children }) {
   return <p className="text-sm text-muted">{children}</p>;
 }
 
-// Apple Health "Trends" card: icon + coloured title, a plain-language
-// summary sentence, a divider, then the chart, then a small range caption.
+// Apple Health "Trends" style card: icon, title, summary sentence, divider, chart, then range caption
 function TrendCard({ icon, title, summary, rangeLabel, onClick, children }) {
   return (
     <section className="rounded-card bg-white p-5 shadow-soft">
@@ -98,9 +95,7 @@ function TrendCard({ icon, title, summary, rangeLabel, onClick, children }) {
   );
 }
 
-// Thin gray bars + a single solid average line with its value floating
-// at the left, exactly the Apple Health Trends chart pattern — reused
-// for every metric below instead of a different chart type per card.
+// thin gray bars with a solid average line and its value on the left, reused for every metric instead of a different chart per card
 function TrendBarChart({ data, dataKey, domain, averageValue, averageLabel, barFill = BAR_COLOR, coloredBars = false }) {
   return (
     <ResponsiveContainer width="100%" height={140}>
@@ -159,19 +154,6 @@ export default function Insights() {
   const moodSleepData = useMemo(() => last30DaysCheckins(checkins), [checkins]);
   const journalTrendData = useMemo(() => last30DaysJournal(journalEntries), [journalEntries]);
   const epdsData = useMemo(() => epdsChartData(epdsResults), [epdsResults]);
-
-  useEffect(() => {
-    if (!loaded) return;
-    console.log('[Insights] chart data', {
-      checkins: checkins.length,
-      moodSleepData,
-      journalEntries: journalEntries.length,
-      journalTrendData,
-      epdsResults: epdsResults.length,
-      epdsData,
-      insights,
-    });
-  }, [loaded, checkins, journalEntries, epdsResults, insights, moodSleepData, journalTrendData, epdsData]);
 
   const moodAvg = average(moodSleepData, 'mood');
   const sleepAvg = average(moodSleepData, 'sleep');

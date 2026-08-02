@@ -3,10 +3,7 @@ import logging
 
 
 class DatadogJSONFormatter(logging.Formatter):
-    # ddtrace (run with DD_LOGS_INJECTION=true) sets these dotted attributes on
-    # the record so a log line can be correlated with the APM trace/span that
-    # produced it. getattr(..., '') is safe even when ddtrace isn't active
-    # (e.g. running `python manage.py runserver` without ddtrace-run locally).
+    # ddtrace sets these dotted attributes when DD_LOGS_INJECTION is on, so a log line can be matched to its APM trace, getattr defaults to empty when ddtrace isn't running
     def format(self, record):
         payload = {
             'timestamp': self.formatTime(record, self.datefmt),

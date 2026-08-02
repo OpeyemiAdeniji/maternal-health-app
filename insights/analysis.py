@@ -16,9 +16,7 @@ TREND_THRESHOLD = 0.3  # min change in rolling mood average to call it a trend, 
 
 
 def analyse_user_patterns(user):
-    # checkins are append-only (no update/delete endpoint), so if the cache was computed
-    # at or after the most recent checkin, nothing has changed since and the pandas/ruptures
-    # analysis below can be skipped entirely
+    # checkins are append-only, so if the cache was computed at or after the most recent checkin, the analysis below can be skipped
     latest_checkin_at = (
         CheckIn.objects.filter(user=user).order_by('-created_at').values_list('created_at', flat=True).first()
     )
@@ -80,7 +78,7 @@ def _detect_change_points(mood_signal):
         breakpoints = algo.predict(pen=2)
     except Exception:
         return []
-    # predict() always tacks on the signal length as a final "breakpoint" — drop it
+    # predict() always tacks on the signal length as a final breakpoint, drop it
     return [bp for bp in breakpoints if bp < len(mood_signal)]
 
 

@@ -140,8 +140,7 @@ def _seed_checkins(user, scores_fn):
         return
 
     today = timezone.localdate()
-    # auto_now_add always stamps "today" on save, so it has to be switched off
-    # here to backdate check-ins across the last 30 days
+    # auto_now_add always stamps today on save, so it has to be switched off here to backdate check-ins across the last 30 days
     date_field = CheckIn._meta.get_field('date')
     date_field.auto_now_add = False
     try:

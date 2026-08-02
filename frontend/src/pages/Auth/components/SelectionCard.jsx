@@ -1,4 +1,4 @@
-// single-select option row — used for the stage picker and every follow-up questionnaire screen
+// single-select option row, used for the stage picker and every follow-up questionnaire screen
 export default function SelectionCard({ label, icon, selected, onClick }) {
   return (
     <button

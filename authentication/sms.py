@@ -12,7 +12,7 @@ def send_safety_net_link(contact_name, phone_number, relationship_type, token, u
     account_sid = os.getenv('TWILIO_ACCOUNT_SID')
     auth_token = os.getenv('TWILIO_AUTH_TOKEN')
     messaging_service_sid = os.getenv('TWILIO_MESSAGING_SERVICE_SID')
-    # kept for parity with the other Twilio settings — the messaging service SID is used as the sender, not this
+    # kept for parity with the other Twilio settings, the messaging service SID is used as the sender, not this
     os.getenv('TWILIO_PHONE_NUMBER')
     frontend_url = os.getenv('FRONTEND_URL', 'http://localhost:5173')
 
@@ -43,13 +43,12 @@ def send_safety_net_link(contact_name, phone_number, relationship_type, token, u
             to=phone_number,
         )
     except Exception:
-        # a failed SMS should never break whatever triggered it — just log and move on
+        # a failed SMS should never break whatever triggered it, just log and move on
         logger.exception('Failed to send safety net SMS to %s', contact_name)
 
 
 def send_love_bombing_contact_alert(contact_name, phone_number, token, user_name):
-    # personal contacts only (partner/friend/family) — deliberately warm and vague, no
-    # mood scores, journal content, or other clinical detail ever go in this message
+    # personal contacts only (partner/friend/family), deliberately warm and vague, no mood scores or clinical detail ever go in this message
     account_sid = os.getenv('TWILIO_ACCOUNT_SID')
     auth_token = os.getenv('TWILIO_AUTH_TOKEN')
     messaging_service_sid = os.getenv('TWILIO_MESSAGING_SERVICE_SID')
