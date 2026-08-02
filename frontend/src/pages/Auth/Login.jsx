@@ -49,7 +49,7 @@ export default function Login() {
     <div className="flex min-h-screen flex-col bg-white px-6 py-12">
       <div className="mx-auto w-full max-w-sm">
         <h1 className="text-2xl font-semibold text-text-primary">Login</h1>
-        <p className="mt-2 text-sm tracking-[2px] text-text-secondary">
+        <p className="mt-2 text-sm text-text-secondary">
           Your data is private and encrypted, we only ask for what we need to support you.
         </p>
 
